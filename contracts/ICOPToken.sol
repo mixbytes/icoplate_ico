@@ -1,11 +1,11 @@
 pragma solidity 0.4.15;
 
-import './solidity/contracts/token/CirculatingToken.sol';
-import './solidity/contracts/token/MintableMultiownedToken.sol';
+import 'mixbytes-solidity/contracts/token/CirculatingToken.sol';
+import 'mixbytes-solidity/contracts/token/MintableMultiownedToken.sol';
 
 
 /// @title ICOPlate coin contract
-contract STQToken is CirculatingToken, MintableMultiownedToken {
+contract ICOPToken is CirculatingToken, MintableMultiownedToken {
 
     // PUBLIC interface
 

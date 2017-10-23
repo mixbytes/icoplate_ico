@@ -1,3 +1,0 @@
-[submodule "contracts/solidity"]
-	path = contracts/solidity
-	url = https://github.com/mixbytes/solidity.git

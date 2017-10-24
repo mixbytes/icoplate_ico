@@ -63,6 +63,10 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConne
         return 10 finney;
     }
 
+    function mustApplyTimeCheck(address investor, uint /*payment*/) constant internal returns (bool) {
+        return investor != owner;
+    }
+
     /// @notice starting exchange rate of ICOP
     uint public constant c_ICOPperETH = 100000;
 }

@@ -38,7 +38,7 @@ contract ICOPPreSale is Ownable, ReentrancyGuard {
         address investor = msg.sender;
         uint256 payment = msg.value;
         require(payment >= c_MinInvestment);
-        require(now < 1507766400);
+        require(now < c_EndTimestamp);
 
         // issue tokens
         uint icop = payment.mul(c_ICOPperETH);
@@ -63,6 +63,9 @@ contract ICOPPreSale is Ownable, ReentrancyGuard {
 
     /// @notice starting exchange rate of ICOP
     uint public constant c_ICOPperETH = 150000;
+
+    /// @notice stop sale timestamp
+    uint public constant c_EndTimestamp = 1507766400;
 
     /// @notice minimum investment
     uint public constant c_MinInvestment = 10 finney;

@@ -21,7 +21,7 @@ contract ICOPToken is CirculatingToken, MintableMultiownedToken {
     }
 
     /// @notice Starts new token emission
-    /// @param _tokensCreatedInSTQ Amount of ICOP to create, like 30 000 or so
+    /// @param _tokensCreatedInICOP Amount of ICOP to create, like 30 000 or so
     function emission(uint256 _tokensCreatedInICOP) external onlymanyowners(sha3(msg.data)) {
         emissionInternal(_tokensCreatedInICOP.mul(uint256(10) ** uint256(decimals)));
     }

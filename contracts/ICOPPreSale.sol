@@ -11,6 +11,8 @@ import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
 
 /// @title ICOPlate pre-sale contract
 contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConnector, InvestmentAnalytics {
+    using SafeMath for uint256;
+
     function ICOPPreSale(address token, address funds)
         SimpleCrowdsaleBase(token)
         ExternalAccountWalletConnector(funds)
@@ -25,6 +27,10 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConne
     }
 
     // INTERNAL
+
+    function calculateTokens(address /*investor*/, uint payment, uint /*extraBonuses*/) internal constant returns (uint) {
+        return payment.mul(c_ICOPperETH);
+    }
 
     /// @notice minimum amount of funding to consider preSale as successful
     function getMinimumFunds() internal constant returns (uint) {
@@ -56,4 +62,7 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConne
     function getMinInvestment() public constant returns (uint) {
         return 10 finney;
     }
+
+    /// @notice starting exchange rate of ICOP
+    uint public constant c_ICOPperETH = 100000;
 }

@@ -10,7 +10,7 @@ import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
 
 
 /// @title ICOPlate pre-sale contract
-contract ICOPPreSale is ICOPPreSale {
+contract ICOPPreICO is ICOPPreSale {
 
     /// @notice maximum investments to be accepted during preSale
     function getMaximumFunds() internal constant returns (uint) {

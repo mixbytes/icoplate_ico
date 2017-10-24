@@ -1,6 +1,6 @@
 pragma solidity 0.4.15;
 
-import './ICOPToken.sol';
+import './ICOPPreSale.sol';
 import 'zeppelin-solidity/contracts/ReentrancyGuard.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
@@ -10,30 +10,10 @@ import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
 
 
 /// @title ICOPlate pre-sale contract
-contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConnector, InvestmentAnalytics {
-    function ICOPPreSale(address token, address funds)
-        SimpleCrowdsaleBase(token)
-        ExternalAccountWalletConnector(funds)
-    {}
-
-    /// @notice Tests ownership of the current caller.
-    /// @return true if it's an owner
-    // It's advisable to call it by new owner to make sure that the same erroneous address is not copy-pasted to
-    // addOwner/changeOwner and to isOwner.
-    function amIOwner() external constant onlyOwner returns (bool) {
-        return true;
-    }
-
-    // INTERNAL
-
-    /// @notice minimum amount of funding to consider preSale as successful
-    function getMinimumFunds() internal constant returns (uint) {
-        return 0;
-    }
+contract ICOPPreSale is ICOPPreSale {
 
     /// @notice maximum investments to be accepted during preSale
     function getMaximumFunds() internal constant returns (uint) {
-        // TODO: make mixbytes-solidity library work without hard cap
         return 10000 ether;
     }
 

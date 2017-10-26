@@ -30,6 +30,6 @@
     "solidity-coverage": "^0.2.2",
     "truffle": "^3.4.6",
     "zeppelin-solidity": "1.2.0",
-    "mixbytes-solidity": "0.1.0"
+    "mixbytes-solidity": "git://github.com/mixbytes/solidity"
   }
 }

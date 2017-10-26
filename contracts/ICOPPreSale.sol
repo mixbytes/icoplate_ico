@@ -29,7 +29,10 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConne
     // INTERNAL
 
     function calculateTokens(address /*investor*/, uint payment, uint /*extraBonuses*/) internal constant returns (uint) {
-        return payment.mul(c_ICOPperETH);
+        uint rate = c_ICOPperETH.mul(c_ICOPBonus.add(100)).div(100);
+
+        return payment.mul(rate);
+
     }
 
     /// @notice minimum amount of funding to consider preSale as successful
@@ -37,25 +40,21 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConne
         return 0;
     }
 
-    /// @notice maximum investments to be accepted during preSale
+    /// @notice maximum investments to be accepted during preSale. No hard cap
     function getMaximumFunds() internal constant returns (uint) {
-        // TODO: make mixbytes-solidity library work without hard cap
-        return 10000 ether;
+        return 0;
     }
 
     /// @notice start time of the pre-ICO
     function getStartTime() internal constant returns (uint) {
-        return 1507766400;
+        // Sun, 5 Nov 2017 0:00:00 GMT
+        return 1509840000;
     }
 
     /// @notice end time of the pre-ICO
     function getEndTime() internal constant returns (uint) {
-        return 1507766400;
-    }
-
-    /// @notice pre-ICO bonus
-    function getPreICOBonus() internal constant returns (uint) {
-        return 0;
+        // FIXME: need details
+        return getStartTime() + (12 days);
     }
 
     /// @notice minimal amount of investment
@@ -68,5 +67,10 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConne
     }
 
     /// @notice starting exchange rate of ICOP
+    // FIXME: need details
     uint public constant c_ICOPperETH = 100000;
+
+    /// @notice additional tokens bonus percent
+    // FIXME: need details
+    uint public constant c_ICOPBonus = 40;
 }

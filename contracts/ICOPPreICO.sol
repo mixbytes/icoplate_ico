@@ -5,6 +5,10 @@ import './ICOPPreSale.sol';
 
 /// @title ICOPlate pre-sale contract
 contract ICOPPreICO is ICOPPreSale {
+    function ICOPPreICO(address token, address funds)
+    ICOPPreSale(token, funds)
+    {}
+
     /// @notice start time of the pre-ICO
     function getStartTime() internal constant returns (uint) {
         // Sun, 15 Nov 2017 0:00:00 GMT

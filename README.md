@@ -15,5 +15,5 @@ trufle test
 
 ## Deployment
 Use truffle migrate, but since you can't specify which migration to process via truffle migrate
-*Don't manage to deploy all the contracts at once. Deploying PreSale remove PreICO AND ICO migrations!
-When deploy preICO after preSale - remove ICO accordingly*
+*don't manage to deploy all the contracts at once. Deploying PreSale remove PreICO and ICO migrations!
+When deploy preICO after preSale - remove ICO accordingly.*

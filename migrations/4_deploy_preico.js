@@ -11,5 +11,8 @@ const ICOPPreICO = artifacts.require("./ICOPPreICO.sol");
 
 module.exports = function(deployer, network) {
     deployer.deploy(ICOPPreICO, ICOPTokenAddress, FundsAddress);
+
+    // owners have to manually perform
+    // ICOPToken.setController(address of ICOPPreICO);
 };
 

@@ -47,78 +47,89 @@ contract('ICOPToken', function(accounts) {
     }
 
     async function deployToken() {
-        const role = getRoles();
-        const token = await ICOPToken.new([role.owner1, role.owner2, role.owner3], {from: role.nobody});
-        return token;
+        const roles = getRoles();
+        const token = await ICOPToken.new([roles.owner1, roles.owner2, roles.owner3], {from: roles.nobody});
+        return [token, roles];
     };
 
-    async function deployTokenAndPreSale() {
-        const role = getRoles();
+    async function deployTokenWithController() {
+        const roles = getRoles();
+        const token = await ICOPToken.new([roles.owner1, roles.owner2, roles.owner3], {from: roles.nobody});
 
-        const token = await ICOPToken.new([role.owner1, role.owner2, role.owner3], {from: role.nobody});
-        const preSale = await ICOPPreSale.new(token.address, role.cash, {from: role.nobody});
+        await token.setController(roles.owner1, {from: roles.owner1});
+        await token.setController(roles.owner1, {from: roles.owner2});
 
-        return [preSale, token, role];
+        return [token, roles, roles.owner1];
     };
 
-    async function deployTokenAndPreICO() {
-        const role = getRoles();
-
-        const token = await ICOPToken.new([role.owner1, role.owner2, role.owner3], {from: role.nobody});
-        const PreICO = await ICOPPreICO.new(token.address, role.cash, {from: role.nobody});
-
-        return [PreICO, token, role];
-    };
 
     it("If nobody setController, token controller is 0x0.....", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
+        const [token, roles] = await deployToken();
 
         assert.equal(await token.m_controller(), "0x0000000000000000000000000000000000000000");
     });
 
     it("If not quorum setController, token controller is 0x0.....", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
+        const [token, roles] = await deployToken();
 
-        await token.setController(preSale.address, {from: role.owner1});
+        await token.setController(roles.owner1, {from: roles.owner1});
 
         assert.equal(await token.m_controller(), "0x0000000000000000000000000000000000000000");
     });
 
-    it("If Quorum setController, token controller match with set preSale.address", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
+    it("If Quorum setController, token controller match with set address", async function(){
+        const [token, roles] = await deployToken();
 
-        await token.setController(preSale.address, {from: role.owner1});
-        await token.setController(preSale.address, {from: role.owner2});
+        await token.setController(roles.owner1, {from: roles.owner1});
+        await token.setController(roles.owner1, {from: roles.owner2});
 
-        assert.equal(await token.m_controller(), preSale.address);
+        assert.equal(await token.m_controller(), roles.owner1);
     });
 
-    it("If another Quorum setController, token controller match with set preSale.address", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
+    it("If another Quorum setController, token controller match with set address", async function(){
+        const [token, roles] = await deployToken();
 
-        await token.setController(preSale.address, {from: role.owner1});
-        await token.setController(preSale.address, {from: role.owner3});
+        await token.setController(roles.owner1, {from: roles.owner1});
+        await token.setController(roles.owner1, {from: roles.owner2});
 
-        assert.equal(await token.m_controller(), preSale.address);
+        assert.equal(await token.m_controller(), roles.owner1);
     });
 
-    it("If all owners setController, token controller match with set preSale.address", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
+    it("If all owners setController, token controller match with set address", async function(){
+        const [token, roles] = await deployToken();
 
-        await token.setController(preSale.address, {from: role.owner1});
-        await token.setController(preSale.address, {from: role.owner2});
-        await token.setController(preSale.address, {from: role.owner3});
+        await token.setController(roles.owner1, {from: roles.owner1});
+        await token.setController(roles.owner1, {from: roles.owner2});
+        await token.setController(roles.owner1, {from: roles.owner3});
 
-        assert.equal(await token.m_controller(), preSale.address);
+        assert.equal(await token.m_controller(), roles.owner1);
     });
 
-    it("If not owners setController, token raise error and controllers not set", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
+    it("If not owners setController not owner, token raise error and controllers not set", async function(){
+        const [token, roles] = await deployToken();
 
         var result;
 
         try {
-            await token.setController(preSale.address, {from: role.investor2})
+            await token.setController(roles.investor2, {from: roles.investor2})
+            result = false;
+        } catch(error) {
+            result = true;
+        }
+
+        assert.ok(result);
+
+        assert.equal(await token.m_controller(), "0x0000000000000000000000000000000000000000");
+
+    });
+
+    it("If not owners setController owner, token raise error and controllers not set", async function(){
+        const [token, roles] = await deployToken();
+
+        var result;
+
+        try {
+            await token.setController(roles.owner1, {from: roles.investor2})
             result = false;
         } catch(error) {
             result = true;
@@ -131,14 +142,14 @@ contract('ICOPToken', function(accounts) {
     });
 
     it("If owner and not owners setController, token raise error and controllers not set", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
+        const [token, roles] = await deployToken();
 
         var result;
 
-        await token.setController(preSale.address, {from: role.owner1});
+        await token.setController(roles.owner1, {from: roles.owner1});
 
         try {
-            await token.setController(preSale.address, {from: role.investor2})
+            await token.setController(roles.owner1, {from: roles.investor2})
             result = false;
         } catch(error) {
             result = true;
@@ -150,42 +161,61 @@ contract('ICOPToken', function(accounts) {
 
     });
 
-    it("Token can setController preSale", async function(){
-        const [preSale, token, role] = await deployTokenAndPreSale();
-
-        await token.setController(preSale.address, {from: role.owner1});
-        await token.setController(preSale.address, {from: role.owner2});
-
-        assert.equal(await token.m_controller(), preSale.address);
+    it("Token name is correctly", async function() {
+        const [token, roles] = await deployToken();
+        const tokenName = await token.name({from: roles.nobody})
+        assert.equal(tokenName, name);
     });
 
-    it("Token can setController preICO", async function(){
-        const [preICO, token, role] = await deployTokenAndPreICO();
-
-        await token.setController(preICO.address, {from: role.owner1});
-        await token.setController(preICO.address, {from: role.owner2});
-
-        assert.equal(await token.m_controller(), preICO.address);
+    it("Token symbol is correctly", async function() {
+        const [token, roles] = await deployToken();
+        const tokenSymbol = await token.symbol({from: roles.nobody})
+        assert.equal(tokenSymbol, symbol);
     });
 
-    it("Token can setController one of the owners", async function(){
-        const [preICO, token, role] = await deployTokenAndPreICO();
-
-        await token.setController(role.owner1, {from: role.owner1});
-        await token.setController(role.owner1, {from: role.owner2});
-
-        assert.equal(await token.m_controller(), role.owner1);
+    it("Controller can mint 1 token", async function() {
+        const [token, roles, controller] = await deployTokenWithController();
+        await token.mint(roles.investor1, ICOP(1), {from: controller});
+        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
+        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(1));
     });
 
-//    it("Token name is right", async function() {
-//        const token = await deployToken();
-//        assert.equal(await token.name({from: role.nobody}), name);
-//    };
-//
-//    it("Token symbol is right", async function() {
-//        const token = deployToken();
-//        assert.equal(await token.symbol({from: role.nobody}), name);
-//    };
+    it("Controller can mint 1 token", async function() {
+        const [token, roles, controller] = await deployTokenWithController();
+        await token.mint(roles.investor1, ICOP(1), {from: controller});
+        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
+        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(1));
+    });
+
+    it("Controller can mint 0 token, but it not increase balance", async function() {
+        const [token, roles, controller] = await deployTokenWithController();
+        await token.mint(roles.investor1, ICOP(0), {from: controller});
+        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
+        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(0));
+    });
+
+    it("!!! Controller can mint -1 token, but it not increase balance", async function() {
+        const [token, roles, controller] = await deployTokenWithController();
+        await token.mint(roles.investor1, ICOP(-1), {from: controller});
+        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
+        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(0));
+    });
+
+//    it("Controller can disable mint", async function() {
+//        const [token, roles, controller] = await deployTokenWithController();
+//        await token.disableMinting({from: controller});
+//        await token.mint(roles.investor1, ICOP(1), {from: controller});
+//        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(1));
+//    });
+
+//    it("Not controller can not disable mint", async function() {
+//        const [token, roles, controller] = await deployTokenWithController();
+//        await token.disableMinting({from: roles.nobody});
+//        await token.mint(roles.investor1, ICOP(1), {from: controller});
+//        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(1));
+//    });
+
+
 
     it("test ERC20 is supported", async function() {
         const role = getRoles();
@@ -195,14 +225,17 @@ contract('ICOPToken', function(accounts) {
         await token.symbol({from: role.nobody});
         await token.decimals({from: role.nobody});
 
-//        console.log(await token.name({from: role.nobody}));
-//        console.log(await token.symbol({from: role.nobody}));
+
 //        console.log(await token.decimals({from: role.nobody}));
 
-//        console.log(await token.totalSupply({from: role.nobody}));
+        console.log(await token.totalSupply({from: role.nobody}));
 //        console.log(await token.totalSupply({from: role.nobody}).eq(ICOP(22)));
 
+
         assert((await token.totalSupply({from: role.nobody})).eq(ICOP(22)));
+
+        console.log(await token.balanceOf(role.investor1, {from: role.nobody}))
+
         assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), ICOP(10));
 
         await token.transfer(role.investor2, ICOP(2), {from: role.investor1});

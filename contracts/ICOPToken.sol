@@ -13,6 +13,7 @@ contract ICOPToken is CirculatingToken, Ownable {
     event ControllerRetired(address was);
     event ControllerDisabledForever();
     event Mint(address indexed to, uint256 amount);
+    event Burn(address indexed to, uint256 amount);
 
     modifier onlyController {
         require(msg.sender == m_controller);
@@ -56,7 +57,12 @@ contract ICOPToken is CirculatingToken, Ownable {
         Mint(_to, _amount);
     }
 
-    // TODO burn
+    /// @dev burns tokens from address
+    function burn(address _to, uint256 _amount) external onlyController {
+        totalSupply = totalSupply.sub(_amount);
+        balances[_to] = balances[_to].sub(_amount);
+        Burn(_to, _amount);
+    }
 
     // FIELDS
     string public constant name = 'ICOPlate Token';

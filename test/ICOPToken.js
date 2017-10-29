@@ -198,5 +198,32 @@ contract('ICOPToken', function(accounts) {
         assert.ok(result);
     });
 
-    // Burn
+    it("Controller can burn valid number of tokens", async function() {
+        const [token, controller] = await deployTokenWithController();
+        const roles = getRoles();
+
+        await token.mint(roles.investor1, ICOP(10), {from: controller});
+        await token.burn(roles.investor1, ICOP(3), {from: controller});
+
+        assert.equal(
+            await token.balanceOf(roles.investor1, {from: roles.nobody}),
+            ICOP(7)
+        );
+    });
+
+    it("Controller can't burn invalid number of tokens", async function() {
+        const [token, controller] = await deployTokenWithController();
+        const roles = getRoles();
+
+        await token.mint(roles.investor1, ICOP(10), {from: controller});
+
+        let result = false;
+        try {
+            await token.burn(roles.investor1, ICOP(11), {from: controller});
+        } catch(error) {
+            result = true;
+        }
+
+        assert.ok(result);
+    });
 });

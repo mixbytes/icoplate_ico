@@ -14,6 +14,23 @@ trufle test
 ```
 
 ## Deployment
+### PreSale
+- deploy token
+- deploy contract
+- token.setController
+- transferOwnerShip if necessary
+
+### PreICO
+- deploy contract
+- token.setController
+
+### ICO
+- deploy contract
+- token.setController
+
+### After ICO
+- token.disableControllersForever()
+
 Use truffle migrate, but since you can't specify which migration to process via truffle migrate
 *don't manage to deploy all the contracts at once. Deploying PreSale remove PreICO and ICO migrations!
 When deploy preICO after preSale - remove ICO accordingly.*

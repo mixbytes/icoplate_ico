@@ -7,6 +7,9 @@ const name = 'ICOPlate Token';
 const symbol = 'ICOP';
 const decimals = 18;
 
+const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+
 contract('ICOPToken', function(accounts) {
 
     function getRoles() {
@@ -48,7 +51,7 @@ contract('ICOPToken', function(accounts) {
     it("If nobody setController, token controller is 0x0.....", async function(){
         const token = await deployToken();
 
-        assert.equal(await token.m_controller(), "0x0000000000000000000000000000000000000000");
+        assert.equal(await token.m_controller(), zeroAddress);
     });
 
 
@@ -67,7 +70,7 @@ contract('ICOPToken', function(accounts) {
 
         assert.ok(result);
 
-        assert.equal(await token.m_controller(), "0x0000000000000000000000000000000000000000");
+        assert.equal(await token.m_controller(), zeroAddress);
 
     });
 
@@ -86,7 +89,7 @@ contract('ICOPToken', function(accounts) {
 
         assert.ok(result);
 
-        assert.equal(await token.m_controller(), "0x0000000000000000000000000000000000000000");
+        assert.equal(await token.m_controller(), zeroAddress);
 
     });
 
@@ -178,8 +181,22 @@ contract('ICOPToken', function(accounts) {
         assert.equal(await token.balanceOf(role.investor3, {from: role.nobody}), ICOP(2));
     });
 
+    it("Test Disable controller forever", async function() {
+        const [token, controller] = await deployTokenWithController();
+        const roles = getRoles();
 
-    // Is mintable
+        await token.disableControllersForever({from: roles.owner1});
+
+        let result = false;
+        try {
+            await token.setController(roles.owner3, {from: roles.owner1});
+        } catch(error) {
+            result = true;
+        }
+
+        // Yes, we can't set controller now
+        assert.ok(result);
+    });
 
     // Burn
 });

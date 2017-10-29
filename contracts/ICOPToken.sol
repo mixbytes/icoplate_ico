@@ -11,6 +11,7 @@ contract ICOPToken is CirculatingToken, Ownable {
 
     event ControllerSet(address controller);
     event ControllerRetired(address was);
+    event ControllerDisabledForever();
     event Mint(address indexed to, uint256 amount);
 
     modifier onlyController {
@@ -25,12 +26,23 @@ contract ICOPToken is CirculatingToken, Ownable {
 
     /// @dev sets the controller
     function setController(address _controller) external onlyOwner {
+        require(!m_isSetControllerDisabled);
         m_controller = _controller;
         ControllerSet(m_controller);
     }
 
+    /// @dev disable setting controllers forever
+    function disableControllersForever() external onlyOwner {
+        require(!m_isSetControllerDisabled);
+
+        m_controller = address(0);
+        m_isSetControllerDisabled = true;
+        ControllerDisabledForever();
+    }
+
     /// @dev ability for controller to step down
-    function detachController() external onlyController {
+    function detachController() external {
+        require(!m_isSetControllerDisabled);
         address was = m_controller;
         m_controller = address(0);
         ControllerRetired(was);
@@ -44,7 +56,6 @@ contract ICOPToken is CirculatingToken, Ownable {
         Mint(_to, _amount);
     }
 
-    // TODO: unset Controller forever
     // TODO burn
 
     // FIELDS
@@ -54,4 +65,5 @@ contract ICOPToken is CirculatingToken, Ownable {
 
     /// @notice address of entity entitled to mint new tokens
     address public m_controller;
+    bool public m_isSetControllerDisabled = false;
 }

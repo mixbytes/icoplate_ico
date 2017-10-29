@@ -76,6 +76,15 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         return investor != owner;
     }
 
+    function wcOnCrowdsaleSuccess() internal {
+        m_token.detachController();
+    }
+
+    /// @dev called in case crowdsale failed
+    function wcOnCrowdsaleFailure() internal {
+        m_token.detachController();
+    }
+
     /// @notice starting exchange rate of ICOP
     // FIXME: need details
     uint public constant c_ICOPperETH = 100000;

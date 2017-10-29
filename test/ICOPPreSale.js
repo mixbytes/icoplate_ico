@@ -26,12 +26,12 @@ contract('ICOPPreSale', function(accounts) {
     }
 
     async function deployTokenAndPreSale() {
-        const role = getRoles();
+        const roles = getRoles();
 
-        const token = await ICOPToken.new([role.owner1, role.owner2, role.owner3], {from: role.nobody});
-        const preSale = await ICOPPreSale.new(token.address, role.cash, {from: role.nobody});
+        const token = await ICOPToken.new([roles.owner1, roles.owner2, roles.owner3], {from: roles.nobody});
+        const preSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.nobody});
 
-        return [preSale, token, role];
+        return [preSale, token, roles];
     }
 
     async function instantiate() {
@@ -80,7 +80,14 @@ contract('ICOPPreSale', function(accounts) {
         await assertBalances(preSale, token, cash, cashInitial, 0);
     });
 
+    it("Token can setController preSale", async function(){
+        const [preSale, token, roles] = await deployTokenAndPreSale();
 
+        await token.setController(preSale.address, {from: roles.owner1});
+        await token.setController(preSale.address, {from: roles.owner2});
+
+        assert.equal(await token.m_controller(), preSale.address);
+    });
 
 
 });

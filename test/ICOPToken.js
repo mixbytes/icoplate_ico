@@ -62,6 +62,72 @@ contract('ICOPToken', function(accounts) {
         return [token, roles, roles.owner1];
     };
 
+    it("Can't deploy token with no owner", async function(){
+        const roles = getRoles();
+        var result;
+        try {
+            const token = await ICOPToken.new([], {from: roles.nobody});
+            result = false;
+        } catch(error) {
+            result = true;
+        }
+
+        assert.ok(result);
+    });
+
+    it("Can't deploy token with 1 owner", async function(){
+        const roles = getRoles();
+        var result;
+        try {
+            const token = await ICOPToken.new([roles.owner1], {from: roles.nobody});
+            result = false;
+        } catch(error) {
+            result = true;
+        }
+
+        assert.ok(result);
+
+    });
+
+    it("Can't deploy token with 2 owner", async function(){
+        const roles = getRoles();
+         var result;
+         try {
+             const token = await ICOPToken.new([roles.owner1, roles.owner2], {from: roles.nobody});
+             result = false;
+         } catch(error) {
+             result = true;
+         }
+
+         assert.ok(result);
+    });
+
+    it("Can't deploy token with similar ownner", async function(){
+        const roles = getRoles();
+        var result;
+        try {
+            const token = await ICOPToken.new([roles.owner1, roles.owner1, roles.owner1], {from: roles.nobody});
+            result = false;
+        } catch(error) {
+            result = true;
+        }
+
+        assert.ok(result);
+    });
+
+    it("Can deploy token with 3 owner", async function(){
+        const roles = getRoles();
+        var result;
+        try {
+            const token = await ICOPToken.new([roles.owner1, roles.owner2, roles.owner3], {from: roles.nobody});
+            assert.notEqual(token.address, "0x0000000000000000000000000000000000000000")
+            result = true;
+        } catch(error) {
+            result = false;
+        }
+
+        assert.ok(result);
+    });
 
     it("If nobody setController, token controller is 0x0.....", async function(){
         const [token, roles] = await deployToken();
@@ -176,29 +242,40 @@ contract('ICOPToken', function(accounts) {
     it("Controller can mint 1 token", async function() {
         const [token, roles, controller] = await deployTokenWithController();
         await token.mint(roles.investor1, ICOP(1), {from: controller});
-        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
         assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(1));
     });
 
     it("Controller can mint 1 token", async function() {
         const [token, roles, controller] = await deployTokenWithController();
         await token.mint(roles.investor1, ICOP(1), {from: controller});
-        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
         assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(1));
     });
 
     it("Controller can mint 0 token, but it not increase balance", async function() {
         const [token, roles, controller] = await deployTokenWithController();
         await token.mint(roles.investor1, ICOP(0), {from: controller});
-        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
         assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(0));
     });
 
     it("!!! Controller can mint -1 token, but it not increase balance", async function() {
         const [token, roles, controller] = await deployTokenWithController();
         await token.mint(roles.investor1, ICOP(-1), {from: controller});
-        console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}))
         assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(0));
+    });
+
+    it("Token can not be transfered at start", async function() {
+        const [token, roles, controller] = await deployTokenWithController();
+        await token.mint(roles.investor1, ICOP(1), {from: controller});
+
+        var result;
+        try {
+            await token.transfer(roles.investor2, ICOP(1), {from: roles.investor1});
+            result = false;
+        } catch(error) {
+            result = true;
+        }
+
+        assert.ok(result);
     });
 
 //    it("Controller can disable mint", async function() {
@@ -226,15 +303,7 @@ contract('ICOPToken', function(accounts) {
         await token.decimals({from: role.nobody});
 
 
-//        console.log(await token.decimals({from: role.nobody}));
-
-        console.log(await token.totalSupply({from: role.nobody}));
-//        console.log(await token.totalSupply({from: role.nobody}).eq(ICOP(22)));
-
-
         assert((await token.totalSupply({from: role.nobody})).eq(ICOP(22)));
-
-        console.log(await token.balanceOf(role.investor1, {from: role.nobody}))
 
         assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), ICOP(10));
 

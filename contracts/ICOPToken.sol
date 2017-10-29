@@ -1,18 +1,21 @@
 pragma solidity 0.4.15;
 
 import 'mixbytes-solidity/contracts/token/CirculatingToken.sol';
-import 'mixbytes-solidity/contracts/token/MintableMultiownedToken.sol';
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 
 /// @title ICOPlate coin contract
-contract ICOPToken is CirculatingToken, MintableMultiownedToken {
+contract ICOPToken is CirculatingToken, Ownable {
+    using SafeMath for uint256;
 
-    // PUBLIC interface
+    event ControllerSet(address controller);
+    event ControllerRetired(address was);
+    event Mint(address indexed to, uint256 amount);
 
-    function ICOPToken(address[] _owners)
-        MintableMultiownedToken(_owners, 2, /* minter: */ address(0))
-    {
-        require(3 == _owners.length);
+    modifier onlyController {
+        require(msg.sender == m_controller);
+        _;
     }
 
     /// @dev Allows token transfers
@@ -20,16 +23,35 @@ contract ICOPToken is CirculatingToken, MintableMultiownedToken {
         assert(enableCirculation());    // must be called once
     }
 
-    /// @notice Starts new token emission
-    /// @param _tokensCreatedInICOP Amount of ICOP to create, like 30 000 or so
-    function emission(uint256 _tokensCreatedInICOP) external onlymanyowners(sha3(msg.data)) {
-        emissionInternal(_tokensCreatedInICOP.mul(uint256(10) ** uint256(decimals)));
+    /// @dev sets the controller
+    function setController(address _controller) external onlyOwner {
+        m_controller = _controller;
+        ControllerSet(m_controller);
     }
 
+    /// @dev ability for controller to step down
+    function detachController() external onlyController {
+        address was = m_controller;
+        m_controller = address(0);
+        ControllerRetired(was);
+    }
+
+    /// @dev mints new tokens
+    function mint(address _to, uint256 _amount) external onlyController {
+        totalSupply = totalSupply.add(_amount);
+        balances[_to] = balances[_to].add(_amount);
+        Transfer(this, _to, _amount);
+        Mint(_to, _amount);
+    }
+
+    // TODO: unset Controller forever
+    // TODO burn
 
     // FIELDS
-
     string public constant name = 'ICOPlate Token';
     string public constant symbol = 'ICOP';
     uint8 public constant decimals = 18;
+
+    /// @notice address of entity entitled to mint new tokens
+    address public m_controller;
 }

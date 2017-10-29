@@ -36,9 +36,9 @@ contract('ICOPToken', function(accounts) {
     async function deployTokenWithController() {
         const token = await ICOPToken.new({from: roles.owner1});
 
-        await token.setController(roles.owner1, {from: roles.owner1});
+        await token.setController(roles.owner2, {from: roles.owner1});
 
-        return [token, roles.owner1];
+        return [token, roles.owner2];
     };
 
     describe('Token ownable tests', function() {
@@ -46,14 +46,14 @@ contract('ICOPToken', function(accounts) {
 
             it("If owner transfer ownable, new owner set", async function(){
                 const token = await deployToken();
-                await token.transfer(roles.owner3, {from: roles.owner1})
-                assert.equal(await token.owner, roles.owner3);
+                await token.transferOwnership(roles.owner3, {from: roles.owner1})
+                assert.equal(await token.owner(), roles.owner3);
             });
 
             it("If owner transfer ownable to same owner, owner not changed", async function(){
                 const token = await deployToken();
-                await token.transfer(roles.owner1, {from: roles.owner1})
-                assert.equal(await token.owner, roles.owner1);
+                await token.transferOwnership(roles.owner1, {from: roles.owner1})
+                assert.equal(await token.owner(), roles.owner1);
             });
         });
 
@@ -61,7 +61,7 @@ contract('ICOPToken', function(accounts) {
             it("If not owner transfer ownable, token raise error and controller not set", async function() {
                 const [token, controller] = await deployTokenWithController();
                 try {
-                    await token.transfer(roles.owner3, {from: nobody})
+                    await token.transferOwnership(roles.owner3, {from: nobody})
                     assert.ok(false);
                 } catch(error) {
                     assert.ok(true);
@@ -71,7 +71,7 @@ contract('ICOPToken', function(accounts) {
             it("If controller transfer ownable, token raise error and controller not set", async function() {
                 const [token, controller] = await deployTokenWithController();
                 try {
-                    await token.transfer(roles.owner3, {from: controller})
+                    await token.transferOwnership(roles.owner3, {from: controller})
                     assert.ok(false);
                 } catch(error) {
                     assert.ok(true);
@@ -130,7 +130,8 @@ contract('ICOPToken', function(accounts) {
                 } catch(error) {
                     assert.ok(true);
                 }
-                assert.equal(await token.m_controller(), zeroAddress);
+                console.log(roles.investor2)
+                assert.equal(await token.m_controller(), controller);
             });
 
             it("If not owner disable controller, token raise error and controller not set", async function() {
@@ -259,7 +260,7 @@ contract('ICOPToken', function(accounts) {
         describe('Positive', function() {
             it("Circulation disable at start", async function() {
                 const [token, controller] = await deployTokenWithController();
-                assert.ok(!token.m_isSetControllerDisabled)
+                assert.equal(await token.m_isSetControllerDisabled(), false)
             });
         });
 

@@ -12,40 +12,34 @@ const ICOPToken = artifacts.require("./ICOPToken.sol");
 
 contract('ICOPPreSale', function(accounts) {
 
-    function getRoles() {
-        return {
-            cash: accounts[0],
-            owner3: accounts[0],
-            owner1: accounts[1],
-            owner2: accounts[2],
-            investor1: accounts[2],
-            investor2: accounts[3],
-            investor3: accounts[4],
-            nobody: accounts[5]
-        };
-    }
+    const roles = {
+        cash: accounts[0],
+        owner3: accounts[0],
+        owner1: accounts[1],
+        owner2: accounts[2],
+        investor1: accounts[2],
+        investor2: accounts[3],
+        investor3: accounts[4],
+        nobody: accounts[5]
+    };
 
     async function deployTokenAndPreSale() {
-        const roles = getRoles();
-
-        const token = await ICOPToken.new([roles.owner1, roles.owner2, roles.owner3], {from: roles.nobody});
+        const token = await ICOPToken.new(roles.owner1, {from: roles.nobody});
         const preSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.nobody});
 
-        return [preSale, token, roles];
+        return [preSale, token];
     }
 
     async function instantiate() {
-        const role = getRoles();
+        const token = await ICOPToken.new(roles.owner1, {from: roles.nobody});
+        const preSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.nobody});
 
-        const token = await ICOPToken.new([role.owner1, role.owner2, role.owner3], {from: role.nobody});
-        const preSale = await ICOPPreSale.new(token.address, role.cash, {from: role.nobody});
+        preSale.transferOwnership(roles.owner1, {from: roles.nobody});
 
-        preSale.transferOwnership(role.owner1, {from: role.nobody});
+        await token.setController(preSale.address, {from: roles.owner1});
+        await token.setController(preSale.address, {from: roles.owner2});
 
-        await token.setController(preSale.address, {from: role.owner1});
-        await token.setController(preSale.address, {from: role.owner2});
-
-        return [preSale, token, role.cash];
+        return [preSale, token, roles.cash];
     }
 
     async function assertBalances(preSale, token, cash, cashInitial, added) {
@@ -61,17 +55,15 @@ contract('ICOPPreSale', function(accounts) {
     }
 
     async function checkNoTransfers(token) {
-        const role = getRoles();
 
-        await expectThrow(token.transfer(role.nobody, STQ(2.5), {from: role.nobody}));
-        await expectThrow(token.transfer(role.investor3, STQ(2.5), {from: role.nobody}));
-        await expectThrow(token.transfer(role.investor3, STQ(2.5), {from: role.investor2}));
+        await expectThrow(token.transfer(roles.nobody, STQ(2.5), {from: roles.nobody}));
+        await expectThrow(token.transfer(roles.investor3, STQ(2.5), {from: roles.nobody}));
+        await expectThrow(token.transfer(roles.investor3, STQ(2.5), {from: roles.investor2}));
     }
 
 
     it("test instantiation", async function() {
-        const role = getRoles();
-        const cashInitial = await web3.eth.getBalance(role.cash);
+        const cashInitial = await web3.eth.getBalance(roles.cash);
 
         const [preSale, token, cash] = await instantiate();
 
@@ -81,7 +73,7 @@ contract('ICOPPreSale', function(accounts) {
     });
 
     it("Token can setController preSale", async function(){
-        const [preSale, token, roles] = await deployTokenAndPreSale();
+        const [preSale, token] = await deployTokenAndPreSale();
 
         await token.setController(preSale.address, {from: roles.owner1});
         await token.setController(preSale.address, {from: roles.owner2});

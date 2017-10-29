@@ -42,7 +42,7 @@ contract ICOPToken is CirculatingToken, Ownable {
     }
 
     /// @dev ability for controller to step down
-    function detachController() external {
+    function detachController() external onlyController {
         require(!m_isSetControllerDisabled);
         address was = m_controller;
         m_controller = address(0);

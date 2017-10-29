@@ -1,6 +1,7 @@
 pragma solidity 0.4.15;
 
 import './ICOPToken.sol';
+import './mixins/StatefulMixin.sol';
 import 'zeppelin-solidity/contracts/ReentrancyGuard.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
@@ -10,13 +11,23 @@ import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
 
 
 /// @title ICOPlate pre-sale contract
-contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConnector, InvestmentAnalytics {
+contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAccountWalletConnector, InvestmentAnalytics {
     using SafeMath for uint256;
 
     function ICOPPreSale(address token, address funds)
         SimpleCrowdsaleBase(token)
         ExternalAccountWalletConnector(funds)
     {}
+
+    /// @notice sale participation
+    function buy() public payable {
+        if (State.INIT == m_state && getCurrentTime() >= getStartTime())
+            changeState(State.RUNNING);
+
+        require(State.RUNNING == m_state);
+
+        return super.buy();
+    }
 
     /// @notice Tests ownership of the current caller.
     /// @return true if it's an owner
@@ -32,7 +43,6 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, ExternalAccountWalletConne
         uint rate = c_ICOPperETH.mul(c_ICOPBonus.add(100)).div(100);
 
         return payment.mul(rate);
-
     }
 
     /// @notice minimum amount of funding to consider preSale as successful

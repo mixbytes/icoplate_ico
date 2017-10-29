@@ -32,7 +32,7 @@ contract ICOPToken is CirculatingToken, Ownable {
     }
 
     /// @dev disable setting controllers forever
-    function disableControllersForever() external onlyOwner {
+    function detachControllerForever() external onlyOwner {
         require(!m_isSetControllerDisabled);
 
         m_controller = address(0);

@@ -185,7 +185,7 @@ contract('ICOPToken', function(accounts) {
         const [token, controller] = await deployTokenWithController();
         const roles = getRoles();
 
-        await token.disableControllersForever({from: roles.owner1});
+        await token.detachControllerForever({from: roles.owner1});
 
         let result = false;
         try {

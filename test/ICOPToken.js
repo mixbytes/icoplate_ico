@@ -29,7 +29,7 @@ contract('ICOPToken', function(accounts) {
     }
 
     async function deployToken() {
-        const token = await ICOPToken.new(roles.owner1, {from: roles.owner1});
+        const token = await ICOPToken.new({from: roles.owner1});
         return token;
     };
 
@@ -79,7 +79,6 @@ contract('ICOPToken', function(accounts) {
             });
         });
     });
-
 
     describe('Token controller tests', function() {
         describe('Positive', function() {

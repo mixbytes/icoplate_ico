@@ -1,6 +1,6 @@
 pragma solidity 0.4.15;
 
-import './ICOPToken.sol';
+import './PLTToken.sol';
 import './mixins/StatefulMixin.sol';
 import 'zeppelin-solidity/contracts/ReentrancyGuard.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
@@ -40,7 +40,7 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     // INTERNAL
 
     function calculateTokens(address /*investor*/, uint payment, uint /*extraBonuses*/) internal constant returns (uint) {
-        uint rate = c_ICOPperETH.mul(c_ICOPBonus.add(100)).div(100);
+        uint rate = c_PLTperETH.mul(c_PLTBonus.add(100)).div(100);
 
         return payment.mul(rate);
     }
@@ -85,11 +85,11 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         m_token.detachController();
     }
 
-    /// @notice starting exchange rate of ICOP
+    /// @notice starting exchange rate of PLT
     // FIXME: need details
-    uint public constant c_ICOPperETH = 100000;
+    uint public constant c_PLTperETH = 100000;
 
     /// @notice additional tokens bonus percent
     // FIXME: need details
-    uint public constant c_ICOPBonus = 40;
+    uint public constant c_PLTBonus = 40;
 }

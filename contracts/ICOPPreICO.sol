@@ -26,11 +26,11 @@ contract ICOPPreICO is ICOPPreSale {
         return 20 finney;
     }
 
-    /// @notice starting exchange rate of ICOP
+    /// @notice starting exchange rate of PLT
     // FIXME: need details
-    uint public constant c_ICOPperETH = 50000;
+    uint public constant c_PLTperETH = 50000;
 
     /// @notice additional tokens bonus percent
     // FIXME: need details
-    uint public constant c_ICOPBonus = 20;
+    uint public constant c_PLTBonus = 20;
 }

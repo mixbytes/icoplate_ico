@@ -7,7 +7,7 @@
 //import {instantiateCrowdsale} from './helpers/storiqa';
 
 const ICOPPreSale = artifacts.require("./ICOPPreSale.sol");
-const ICOPToken = artifacts.require("./ICOPToken.sol");
+const PLTToken = artifacts.require("./PLTToken.sol");
 
 
 contract('ICOPPreSale', function(accounts) {
@@ -28,7 +28,7 @@ contract('ICOPPreSale', function(accounts) {
     async function deployTokenAndPreSale() {
         const roles = getRoles();
 
-        const token = await ICOPToken.new([roles.owner1, roles.owner2, roles.owner3], {from: roles.nobody});
+        const token = await PLTToken.new([roles.owner1, roles.owner2, roles.owner3], {from: roles.nobody});
         const preSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.nobody});
 
         return [preSale, token, roles];
@@ -37,7 +37,7 @@ contract('ICOPPreSale', function(accounts) {
     async function instantiate() {
         const role = getRoles();
 
-        const token = await ICOPToken.new([role.owner1, role.owner2, role.owner3], {from: role.nobody});
+        const token = await PLTToken.new([role.owner1, role.owner2, role.owner3], {from: role.nobody});
         const preSale = await ICOPPreSale.new(token.address, role.cash, {from: role.nobody});
 
         preSale.transferOwnership(role.owner1, {from: role.nobody});
@@ -89,5 +89,13 @@ contract('ICOPPreSale', function(accounts) {
         assert.equal(await token.m_controller(), preSale.address);
     });
 
+    it("Test sale someone has stolen funds", async function(){
+        const [preSale, token, roles] = await deployTokenAndPreSale();
+
+        await token.setController(preSale.address, {from: roles.owner1});
+        await token.setController(preSale.address, {from: roles.owner2});
+
+        assert.equal(await token.m_controller(), preSale.address);
+    });
 
 });

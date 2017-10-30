@@ -1,7 +1,7 @@
 'use strict';
 
-const ICOPToken = artifacts.require("./ICOPToken.sol");
+const PLTToken = artifacts.require("./PLTToken.sol");
 
 module.exports = function(deployer, network) {
-    deployer.deploy(ICOPToken);
+    deployer.deploy(PLTToken);
 };

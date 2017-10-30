@@ -6,7 +6,7 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 
 /// @title ICOPlate coin contract
-contract ICOPToken is CirculatingToken, Ownable {
+contract PLTToken is CirculatingToken, Ownable {
     using SafeMath for uint256;
 
     event ControllerSet(address controller);

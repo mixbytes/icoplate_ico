@@ -1,16 +1,16 @@
 'use strict';
 
 // testrpc has to be run as testrpc -u 0 -u 1
-const ICOPToken = artifacts.require("./ICOPToken.sol");
+const PLTToken = artifacts.require("./PLTToken.sol");
 
 const name = 'ICOPlate Token';
-const symbol = 'ICOP';
+const symbol = 'PLT';
 const decimals = 18;
 
 const zeroAddress = "0x0000000000000000000000000000000000000000";
 
 
-contract('ICOPToken', function(accounts) {
+contract('PLTToken', function(accounts) {
 
     function getRoles() {
         return {
@@ -25,21 +25,21 @@ contract('ICOPToken', function(accounts) {
         };
     }
 
-    // converts amount of ICOP into ICOP-wei
-    function ICOP(amount) {
+    // converts amount of PLT into PLT-wei
+    function PLT(amount) {
         return web3.toWei(amount, 'ether');
     }
 
     async function deployToken() {
         const roles = getRoles();
-        const token = await ICOPToken.new({from: roles.owner1});
+        const token = await PLTToken.new({from: roles.owner1});
 
         return token;
     };
 
     async function deployTokenWithController() {
         const roles = getRoles();
-        const token = await ICOPToken.new({from: roles.owner1});
+        const token = await PLTToken.new({from: roles.owner1});
 
         await token.setController(roles.owner2, {from: roles.owner1});
         await token.setController(roles.owner1, {from: roles.owner1});
@@ -113,10 +113,10 @@ contract('ICOPToken', function(accounts) {
         const [token, controller] = await deployTokenWithController();
         const roles = getRoles();
 
-        await token.mint(roles.investor1, ICOP(1), {from: controller});
+        await token.mint(roles.investor1, PLT(1), {from: controller});
         assert.equal(
             await token.balanceOf(roles.investor1, {from: roles.nobody}),
-            ICOP(1)
+            PLT(1)
         );
     });
 
@@ -124,27 +124,27 @@ contract('ICOPToken', function(accounts) {
         const [token, controller] = await deployTokenWithController();
         const roles = getRoles();
 
-        await token.mint(roles.investor1, ICOP(0), {from: controller});
-        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(0));
+        await token.mint(roles.investor1, PLT(0), {from: controller});
+        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), PLT(0));
     });
 
     it("Controller can mint -1 token, but it doesn't increase balance", async function() {
         const [token, controller] = await deployTokenWithController();
         const roles = getRoles();
 
-        await token.mint(roles.investor1, ICOP(-1), {from: controller});
-        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), ICOP(0));
+        await token.mint(roles.investor1, PLT(-1), {from: controller});
+        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), PLT(0));
     });
 
     it("Token can not be transferred at start", async function() {
         const [token, controller] = await deployTokenWithController();
         const roles = getRoles();
 
-        await token.mint(roles.investor1, ICOP(1), {from: controller});
+        await token.mint(roles.investor1, PLT(1), {from: controller});
 
         var result;
         try {
-            await token.transfer(roles.investor2, ICOP(1), {from: roles.investor1});
+            await token.transfer(roles.investor2, PLT(1), {from: roles.investor1});
             result = false;
         } catch(error) {
             result = true;
@@ -164,21 +164,21 @@ contract('ICOPToken', function(accounts) {
         await token.decimals({from: role.nobody});
 
 
-        assert((await token.totalSupply({from: role.nobody})).eq(ICOP(22)));
+        assert((await token.totalSupply({from: role.nobody})).eq(PLT(22)));
 
-        assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), ICOP(10));
+        assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), PLT(10));
 
-        await token.transfer(role.investor2, ICOP(2), {from: role.investor1});
-        assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), ICOP(8));
-        assert.equal(await token.balanceOf(role.investor2, {from: role.nobody}), ICOP(14));
+        await token.transfer(role.investor2, PLT(2), {from: role.investor1});
+        assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), PLT(8));
+        assert.equal(await token.balanceOf(role.investor2, {from: role.nobody}), PLT(14));
 
-        await token.approve(role.investor2, ICOP(3), {from: role.investor1});
-        assert.equal(await token.allowance(role.investor1, role.investor2, {from: role.nobody}), ICOP(3));
-        await token.transferFrom(role.investor1, role.investor3, ICOP(2), {from: role.investor2});
-        assert.equal(await token.allowance(role.investor1, role.investor2, {from: role.nobody}), ICOP(1));
-        assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), ICOP(6));
-        assert.equal(await token.balanceOf(role.investor2, {from: role.nobody}), ICOP(14));
-        assert.equal(await token.balanceOf(role.investor3, {from: role.nobody}), ICOP(2));
+        await token.approve(role.investor2, PLT(3), {from: role.investor1});
+        assert.equal(await token.allowance(role.investor1, role.investor2, {from: role.nobody}), PLT(3));
+        await token.transferFrom(role.investor1, role.investor3, PLT(2), {from: role.investor2});
+        assert.equal(await token.allowance(role.investor1, role.investor2, {from: role.nobody}), PLT(1));
+        assert.equal(await token.balanceOf(role.investor1, {from: role.nobody}), PLT(6));
+        assert.equal(await token.balanceOf(role.investor2, {from: role.nobody}), PLT(14));
+        assert.equal(await token.balanceOf(role.investor3, {from: role.nobody}), PLT(2));
     });
 
     it("Test Disable controller forever", async function() {
@@ -202,12 +202,12 @@ contract('ICOPToken', function(accounts) {
         const [token, controller] = await deployTokenWithController();
         const roles = getRoles();
 
-        await token.mint(roles.investor1, ICOP(10), {from: controller});
-        await token.burn(roles.investor1, ICOP(3), {from: controller});
+        await token.mint(roles.investor1, PLT(10), {from: controller});
+        await token.burn(roles.investor1, PLT(3), {from: controller});
 
         assert.equal(
             await token.balanceOf(roles.investor1, {from: roles.nobody}),
-            ICOP(7)
+            PLT(7)
         );
     });
 
@@ -215,11 +215,11 @@ contract('ICOPToken', function(accounts) {
         const [token, controller] = await deployTokenWithController();
         const roles = getRoles();
 
-        await token.mint(roles.investor1, ICOP(10), {from: controller});
+        await token.mint(roles.investor1, PLT(10), {from: controller});
 
         let result = false;
         try {
-            await token.burn(roles.investor1, ICOP(11), {from: controller});
+            await token.burn(roles.investor1, PLT(11), {from: controller});
         } catch(error) {
             result = true;
         }

@@ -7,7 +7,7 @@
 //import {instantiateCrowdsale} from './helpers/storiqa';
 
 const ICOPPreSale = artifacts.require("./test_helpers/ICOPPreSaleTestHelper.sol");
-const ICOPToken = artifacts.require("./PLTToken.sol");
+const PLTToken = artifacts.require("./PLTToken.sol");
 
 
 contract('ICOPPreSale', function(accounts) {

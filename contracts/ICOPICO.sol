@@ -3,20 +3,35 @@ pragma solidity 0.4.15;
 import './PLTToken.sol';
 import './mixins/StatefulMixin.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-import 'mixbytes-solidity/contracts/crowdsale/ExternalAccountWalletConnector.sol';
+import 'mixbytes-solidity/contracts/crowdsale/FundsRegistryWalletConnector';
 import 'mixbytes-solidity/contracts/crowdsale/SimpleCrowdsaleBase.sol';
 import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
 
 
-/// @title ICOPlate pre-sale contract
-contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAccountWalletConnector, InvestmentAnalytics {
+/// @title ICOPlate ICO contract
+contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistryWalletConnector, InvestmentAnalytics {
     using SafeMath for uint256;
 
-    function ICOPPreSale(address token, address funds)
-        SimpleCrowdsaleBase(token)
-        ExternalAccountWalletConnector(funds)
-    {}
+    function ICOPICO(address[] _owners, address _token, address _funds)
+    multiowned(_owners, 2)
+    SimpleCrowdsaleBase(token)
+    FundsRegistryWalletConnector(_owners, 2)
+    {
+        require(3 == _owners.length);
+
+        // TODO: use FixedTimeBonuses from solidity library
+    }
+
+    function pause() external requiresState(State.RUNNING) onlyowner
+    {
+        super.pause();
+    }
+
+    /// @notice resume paused sale
+    function unpause() external requiresState(State.PAUSED) onlymanyowners(sha3(msg.data))
+    {
+        super.unpause();
+    }
 
     /// @notice sale participation
     function buy() public payable {
@@ -28,35 +43,44 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         return super.buy();
     }
 
+    function withdrawPayments() public payable requiresState(State.FAILED) {
+        m_fundsAddress.withdrawPayments();
+        m_token.burn(msg.sender, m_token.balanceOf(msg.sender));
+    }
+
+
     /// @notice Tests ownership of the current caller.
     /// @return true if it's an owner
     // It's advisable to call it by new owner to make sure that the same erroneous address is not copy-pasted to
     // addOwner/changeOwner and to isOwner.
-    function amIOwner() external constant onlyOwner returns (bool) {
+    function amIOwner() external constant onlyowner returns (bool) {
         return true;
     }
 
     // INTERNAL
 
     function calculateTokens(address /*investor*/, uint payment, uint /*extraBonuses*/) internal constant returns (uint) {
+        // FIMXE: here flexible logic with decreasing every day
         uint rate = c_PLTperETH.mul(c_PLTBonus.add(100)).div(100);
 
         return payment.mul(rate);
     }
 
-    /// @notice minimum amount of funding to consider preSale as successful
+    /// @notice minimum amount of funding to consider ICO as successful
     function getMinimumFunds() internal constant returns (uint) {
-        return 0;
+        // FIXME: need details
+        return 1000 finney;
     }
 
-    /// @notice maximum investments to be accepted during preSale. No hard cap
+    /// @notice maximum investments to be accepted during ICO
     function getMaximumFunds() internal constant returns (uint) {
-        return 0;
+        // FIXME: need details
+        return 4000 finney;
     }
 
     /// @notice start time of the pre-ICO
     function getStartTime() internal constant returns (uint) {
-        // Sun, 5 Nov 2017 0:00:00 GMT
+        // FIXME: need details
         return 1509840000;
     }
 
@@ -72,16 +96,20 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     }
 
     function mustApplyTimeCheck(address investor, uint /*payment*/) constant internal returns (bool) {
-        return investor != owner;
+        return isOwner(investor);
     }
 
     function wcOnCrowdsaleSuccess() internal {
+        m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
+        m_token.startCirculation();
         m_token.detachController();
     }
 
     /// @dev called in case crowdsale failed
     function wcOnCrowdsaleFailure() internal {
-        m_token.detachController();
+        // FIXME: here burn logic
+        m_fundsAddress.changeState(FundsRegistry.State.REFUNDING);
+        //m_token.detachController();
     }
 
     /// @notice starting exchange rate of PLT

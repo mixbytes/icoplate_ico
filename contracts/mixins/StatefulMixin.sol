@@ -24,7 +24,12 @@ contract StatefulMixin is Ownable {
     function unpause() external requiresState(State.PAUSED) onlyOwner
     {
         changeState(State.RUNNING);
-        //checkTime();
+    }
+
+    /// @notice consider paused ICO as failed
+    function fail() internal
+    {
+        changeState(IcoState.FAILED);
     }
 
     function changeState(State _newState) internal {

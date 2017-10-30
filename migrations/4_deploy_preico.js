@@ -13,6 +13,6 @@ module.exports = function(deployer, network) {
     deployer.deploy(ICOPPreICO, PLTTokenAddress, FundsAddress);
 
     // owners have to manually perform
-    // PLTToken.setController(address of PLTPreICO);
+    // PLTToken.setController(address of ICOPPreICO);
 };
 

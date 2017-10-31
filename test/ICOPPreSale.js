@@ -30,53 +30,14 @@ contract('ICOPPreSale', function(accounts) {
         return [preSale, token];
     }
 
-//    async function instantiate() {
-//        const token = await ICOPToken.new(roles.owner1, {from: roles.nobody});
-//        const preSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.nobody});
-//
-//        preSale.transferOwnership(roles.owner1, {from: roles.nobody});
-//
-//        await token.setController(preSale.address, {from: roles.owner1});
-//        await token.setController(preSale.address, {from: roles.owner2});
-//
-//        return [preSale, token, roles.cash];
-//    }
-//
-//    async function assertBalances(preSale, token, cash, cashInitial, added) {
-//        assert.equal(await web3.eth.getBalance(preSale.address), 0);
-//        assert.equal(await web3.eth.getBalance(token.address), 0);
-//        assert((await web3.eth.getBalance(cash)).sub(cashInitial).eq(added));
-//    }
-//
-//    // converts amount of STQ into STQ-wei
-//    function STQ(amount) {
-//        // decimals is the same as in ether, so..
-//        return web3.toWei(amount, 'ether');
-//    }
-//
-//    async function checkNoTransfers(token) {
-//
-//        await expectThrow(token.transfer(roles.nobody, STQ(2.5), {from: roles.nobody}));
-//        await expectThrow(token.transfer(roles.investor3, STQ(2.5), {from: roles.nobody}));
-//        await expectThrow(token.transfer(roles.investor3, STQ(2.5), {from: roles.investor2}));
-//    }
-//
-//
-//    it("test instantiation", async function() {
-//        const cashInitial = await web3.eth.getBalance(roles.cash);
-//
-//        const [preSale, token, cash] = await instantiate();
-//
-//        assert.equal(await token.m_controller(), preSale.address);
-//
-//        await assertBalances(preSale, token, cash, cashInitial, 0);
-//    });
-
     it("Token can setController preSale", async function(){
         const [preSale, token] = await deployTokenAndPreSale();
-        await token.setController(preSale.address, {from: roles.owner1});
+        await token.addController(preSale.address, {from: roles.owner1});
 
-        assert.equal(await token.m_controller(), preSale.address);
+           let z = await token.m_controllers();
+        console.log("X = " + z);
+
+        assert.equal(, [preSale.address]);
     });
 
     describe('Token controller tests', function() {

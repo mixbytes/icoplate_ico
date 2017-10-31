@@ -26,12 +26,12 @@ contract MultiControlledMixin is Ownable {
     }
 
     /// @dev Detach address from controllers
-    function detachController(address _controller) external onlyOwner {
+    function detachController() external onlyControllers {
         require(!m_isSetControllerDisabled);
         for (uint i = 0; i < m_controllers.length; ++i) {
-            if (m_controllers[i] == _controller) {
+            if (m_controllers[i] == msg.sender) {
                 delete m_controllers[i];
-                ControllerRetired(_controller);
+                ControllerRetired(msg.sender);
                 break;
             }
         }

@@ -120,4 +120,6 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
     /// @notice additional tokens bonus percent
     // FIXME: need details
     uint public constant c_PLTBonus = 40;
+
+    PLTToken public m_token;
 }

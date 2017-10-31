@@ -1,6 +1,5 @@
 pragma solidity 0.4.15;
 
-import './PLTToken.sol';
 import './mixins/StatefulMixin.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
@@ -17,7 +16,6 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         SimpleCrowdsaleBase(token)
         ExternalAccountWalletConnector(funds)
     {
-        m_token = PLTToken(token);
     }
 
     /// @notice sale participation

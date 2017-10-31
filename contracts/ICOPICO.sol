@@ -25,13 +25,13 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
 
     function pause() external requiresState(State.RUNNING) onlyowner
     {
-        //super.pause();
+        changeState(State.PAUSED);
     }
 
     /// @notice resume paused sale
     function unpause() external requiresState(State.PAUSED) onlymanyowners(sha3(msg.data))
     {
-        //super.unpause();
+        changeState(State.RUNNING);
     }
 
     /// @notice sale participation
@@ -110,6 +110,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
     function wcOnCrowdsaleFailure() internal {
         // FIXME: here burn logic
         m_fundsAddress.changeState(FundsRegistry.State.REFUNDING);
+        fail();
         //m_token.detachController();
     }
 

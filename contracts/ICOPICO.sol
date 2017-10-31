@@ -3,7 +3,7 @@ pragma solidity 0.4.15;
 import './PLTToken.sol';
 import './mixins/StatefulMixin.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
-import 'mixbytes-solidity/contracts/crowdsale/FundsRegistryWalletConnector';
+import 'mixbytes-solidity/contracts/crowdsale/FundsRegistryWalletConnector.sol';
 import 'mixbytes-solidity/contracts/crowdsale/SimpleCrowdsaleBase.sol';
 import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
 
@@ -14,7 +14,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
 
     function ICOPICO(address[] _owners, address _token, address _funds)
     multiowned(_owners, 2)
-    SimpleCrowdsaleBase(token)
+    SimpleCrowdsaleBase(_token)
     FundsRegistryWalletConnector(_owners, 2)
     {
         require(3 == _owners.length);

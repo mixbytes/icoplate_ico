@@ -1,5 +1,6 @@
 pragma solidity 0.4.15;
 
+import './PLTToken.sol';
 import './mixins/StatefulMixin.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
@@ -91,4 +92,6 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     /// @notice additional tokens bonus percent
     // FIXME: need details
     uint public constant c_PLTBonus = 40;
+
+    PLTToken public m_token;
 }

@@ -7,7 +7,7 @@
 //import {instantiateCrowdsale} from './helpers/storiqa';
 
 const ICOPPreSale = artifacts.require("./test_helpers/ICOPPreSaleTestHelper.sol");
-const PLTToken = artifacts.require("./PLTToken.sol");
+const PLTToken = artifacts.require("./test_helpers/PLTTokenTestHelper.sol");
 
 
 contract('ICOPPreSale', function(accounts) {
@@ -34,7 +34,7 @@ contract('ICOPPreSale', function(accounts) {
         const [preSale, token] = await deployTokenAndPreSale();
         await token.addController(preSale.address, {from: roles.owner1});
 
-        assert.equal(await token.m_controllers(), [preSale.address]);
+        assert.equal((await token.get_m_controllers())[0], preSale.address);
     });
 
     describe('Token controller tests', function() {
@@ -46,22 +46,6 @@ contract('ICOPPreSale', function(accounts) {
             const [preSale, token] = await deployTokenAndPreSale();
             try {
                 await preSale.amIOwner({from: roles.owner2})
-                assert.ok(false);
-            } catch(error) {
-                assert.ok(true);
-            }
-        });
-    });
-
-    describe('Token controller tests', function() {
-        it("If owner call amIOwner, return true", async function(){
-            const [preSale, token] = await deployTokenAndPreSale();
-            await assert.ok(await preSale.amIOwner())
-        });
-        it("If not owner call amIOwner, preSale raise error", async function(){
-            const [preSale, token] = await deployTokenAndPreSale();
-            try {
-                await preSale.amIOwner()
                 assert.ok(false);
             } catch(error) {
                 assert.ok(true);

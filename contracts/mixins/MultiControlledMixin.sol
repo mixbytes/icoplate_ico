@@ -46,6 +46,7 @@ contract MultiControlledMixin is Ownable {
     }
 
     /// @dev Check if address in controllers
+    // FIXME: check gas consuption comparing to using mapping solutiuon
     function isController(address _controller) internal returns (bool) {
         for (uint i = 0; i < m_controllers.length; ++i) {
             if (m_controllers[i] == _controller) {

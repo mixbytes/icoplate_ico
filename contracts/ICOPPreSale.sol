@@ -16,7 +16,9 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     function ICOPPreSale(address token, address funds)
         SimpleCrowdsaleBase(token)
         ExternalAccountWalletConnector(funds)
-    {}
+    {
+        m_token = PLTToken(token);
+    }
 
     /// @notice sale participation
     function buy() public payable {

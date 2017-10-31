@@ -34,10 +34,7 @@ contract('ICOPPreSale', function(accounts) {
         const [preSale, token] = await deployTokenAndPreSale();
         await token.addController(preSale.address, {from: roles.owner1});
 
-           let z = await token.m_controllers();
-        console.log("X = " + z);
-
-        assert.equal(, [preSale.address]);
+        assert.equal(await token.m_controllers(), [preSale.address]);
     });
 
     describe('Token controller tests', function() {

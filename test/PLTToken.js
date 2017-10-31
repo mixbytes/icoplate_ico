@@ -17,10 +17,13 @@ contract('PLTToken', function(accounts) {
         owner3: accounts[0],
         owner1: accounts[1],
         owner2: accounts[2],
+        controller1: accounts[2],
+        controller2: accounts[3],
+        controller3: accounts[4],
         investor1: accounts[2],
-        investor2: accounts[3],
-        investor3: accounts[4],
-        nobody: accounts[5]
+        investor2: accounts[4],
+        investor3: accounts[5],
+        nobody: accounts[9]
     };
 
     // converts amount of PLT into PLT-wei
@@ -37,7 +40,7 @@ contract('PLTToken', function(accounts) {
     async function deployTokenWithController() {
         const token = await PLTToken.new({from: roles.owner1});
 
-        await token.setController(roles.owner2, {from: roles.owner1});
+        await token.addController(roles.owner2, {from: roles.owner1});
 
         return [token, roles.owner2];
     };
@@ -84,24 +87,37 @@ contract('PLTToken', function(accounts) {
     describe('Token controller tests', function() {
         describe('Positive', function() {
 
-            it("If nobody setController, token controller is 0x0.....", async function(){
+            it("If nobody addControllers, m_controllers is empty", async function(){
                 const token = await deployToken();
-                assert.equal(await token.m_controller(), zeroAddress);
+                assert.deepEqual(await token.getControllers({from: roles.owner1}), []);
             });
 
-            it("If owner setController, controller set", async function(){
+            it("If owner addController, controller added", async function(){
                 const token = await deployToken();
-                await token.setController(roles.owner2, {from: roles.owner1})
-                assert.equal(await token.m_controller(), roles.owner2);
+                await token.addController(roles.owner2, {from: roles.owner1})
+                assert.deepEqual(await token.getControllers({from: roles.owner1}), [roles.owner2]);
+            });
+
+            it("If owner add 5 controllers, controller added", async function(){
+                const token = await deployToken();
+                await token.addController(accounts[2], {from: roles.owner1})
+                await token.addController(accounts[3], {from: roles.owner1})
+                await token.addController(accounts[4], {from: roles.owner1})
+                await token.addController(accounts[5], {from: roles.owner1})
+                await token.addController(accounts[6], {from: roles.owner1})
+                assert.deepEqual(
+                    await token.getControllers({from: roles.nobody}),
+                    [accounts[2], accounts[3], accounts[4], accounts[5], accounts[6]]
+                );
             });
 
             it("If owner Disable controller, setController is disabled forever", async function() {
                 const [token, controller] = await deployTokenWithController();
 
-                await token.detachControllerForever({from: roles.owner1});
+                await token.detachControllersForever({from: roles.owner1});
 
                 try {
-                    await token.setController(roles.owner3, {from: roles.owner1});
+                    await token.addController(roles.owner3, {from: roles.owner1});
                     assert.ok(false);
                 } catch(error) {
                     assert.ok(true);
@@ -111,33 +127,53 @@ contract('PLTToken', function(accounts) {
         });
 
         describe('Negative', function() {
-            it("If not owner setController, token raise error and controller not set", async function(){
+
+            it("If owner add 6 controllers, 5 controller added, and 6th not added", async function(){
                 const token = await deployToken();
+                await token.addController(accounts[2], {from: roles.owner1})
+                await token.addController(accounts[3], {from: roles.owner1})
+                await token.addController(accounts[4], {from: roles.owner1})
+                await token.addController(accounts[5], {from: roles.owner1})
+                await token.addController(accounts[6], {from: roles.owner1})
                 try {
-                    await token.setController(roles.investor2, {from: roles.investor2})
+                    await token.addController(accounts[7], {from: roles.owner1})
                     assert.ok(false);
                 } catch(error) {
                     assert.ok(true);
                 }
-                assert.equal(await token.m_controller(), zeroAddress);
+                assert.deepEqual(
+                    await token.getControllers({from: roles.nobody}),
+                    [accounts[2], accounts[3], accounts[4], accounts[5], accounts[6]]
+                );
             });
 
-            it("If controller setController, token raise error and controller not set", async function(){
+            it("If not owner addController, token raise error and controller not set", async function(){
+                const token = await deployToken();
+                try {
+                    await token.addController(roles.investor2, {from: roles.investor2})
+                    assert.ok(false);
+                } catch(error) {
+                    assert.ok(true);
+                }
+                assert.deepEqual(await token.getControllers({from: roles.owner1}), []);
+            });
+
+            it("If controller addController, token raise error and controller not set", async function(){
                 const [token, controller] = await deployTokenWithController();
                 try {
-                    await token.setController(roles.investor2, {from: controller})
+                    await token.addController(roles.investor2, {from: controller})
                     assert.ok(false);
                 } catch(error) {
                     assert.ok(true);
                 }
                 console.log(roles.investor2)
-                assert.equal(await token.m_controller(), controller);
+                assert.deepEqual(await token.getControllers({from: roles.owner1}), [controller]);
             });
 
             it("If not owner disable controller, token raise error and controller not set", async function() {
                 const [token, controller] = await deployTokenWithController();
                 try {
-                    await token.detachControllerForever({from: roles.nobody});
+                    await token.detachControllersForever({from: roles.nobody});
                     assert.ok(false);
                 } catch(error) {
                     assert.ok(true);
@@ -147,7 +183,7 @@ contract('PLTToken', function(accounts) {
             it("If controller disable controller, token raise error and controller not set", async function() {
                 const [token, controller] = await deployTokenWithController();
                 try {
-                    await token.detachControllerForever({from: controller});
+                    await token.detachControllersForever({from: controller});
                     assert.ok(false);
                 } catch(error) {
                     assert.ok(true);
@@ -267,31 +303,6 @@ contract('PLTToken', function(accounts) {
 
         });
     });
-
-    it("test ERC20 is supported", async function() {
-        const [token, controller] = await deployTokenWithController();
-
-        await token.name({from: roles.nobody});
-        await token.symbol({from: roles.nobody});
-        await token.decimals({from: roles.nobody});
-
-        assert((await token.totalSupply({from: roles.nobody})).eq(PLT(22)));
-
-        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), PLT(10));
-
-        await token.transfer(roles.investor2, PLT(2), {from: roles.investor1});
-        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), PLT(8));
-        assert.equal(await token.balanceOf(roles.investor2, {from: roles.nobody}), PLT(14));
-
-        await token.approve(roles.investor2, PLT(3), {from: roles.investor1});
-        assert.equal(await token.allowance(roles.investor1, roles.investor2, {from: roles.nobody}), PLT(3));
-        await token.transferFrom(roles.investor1, roles.investor3, PLT(2), {from: roles.investor2});
-        assert.equal(await token.allowance(roles.investor1, roles.investor2, {from: roles.nobody}), PLT(1));
-        assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), PLT(6));
-        assert.equal(await token.balanceOf(roles.investor2, {from: roles.nobody}), PLT(14));
-        assert.equal(await token.balanceOf(roles.investor3, {from: roles.nobody}), PLT(2));
-    });
-
 
 
     it("Controller can burn valid number of tokens", async function() {

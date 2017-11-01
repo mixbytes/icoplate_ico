@@ -20,15 +20,10 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         m_token = PLTToken(token);
     }
 
-    /// @notice sale participation
-    function buy() public payable exceptsState(State.PAUSED) {
-        if (getCurrentState() == State.INIT && getCurrentTime() >= getStartTime())
-            changeState(State.RUNNING);
+    // PUBLIC interface: maintenance
 
-        if (mustApplyTimeCheck(msg.sender, msg.value))
-            require(State.RUNNING == m_state);
-
-        super.buy();
+    function createMorePaymentChannels(uint limit) external onlyOwner returns (uint) {
+        return createMorePaymentChannelsInternal(limit);
     }
 
     /// @notice Tests ownership of the current caller.
@@ -40,6 +35,25 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     }
 
     // INTERNAL
+
+    /// @notice sale participation
+    function buyInternal(address investor, uint payment, uint extraBonuses)
+    internal
+    exceptsState(State.PAUSED)
+    {
+        if (getCurrentState() == State.INIT && getCurrentTime() >= getStartTime())
+            changeState(State.RUNNING);
+
+        if (mustApplyTimeCheck(investor, payment))
+            require(State.RUNNING == m_state);
+
+        super.buyInternal(investor, payment, extraBonuses);
+    }
+
+    function iaOnInvested(address investor, uint payment, bool /*usingPaymentChannel*/) internal
+    {
+        buyInternal(investor, payment, 0);
+    }
 
     function calculateTokens(address /*investor*/, uint payment, uint /*extraBonuses*/) internal constant returns (uint) {
         uint rate = c_PLTperETH.mul(c_PLTBonus.add(100)).div(100);
@@ -86,6 +100,8 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     function wcOnCrowdsaleFailure() internal {
         m_token.detachController();
     }
+
+    // FIELDS
 
     /// @notice starting exchange rate of PLT
     // FIXME: need details

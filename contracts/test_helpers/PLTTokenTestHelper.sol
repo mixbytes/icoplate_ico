@@ -8,5 +8,9 @@ contract PLTTokenTestHelper is PLTToken {
     function get_m_controllers() constant returns(address[]) {
         return m_controllers;
     }
+
+    function getMaxControllers() public constant returns (uint){
+        return 5;
+    }
 }
 

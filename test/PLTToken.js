@@ -98,6 +98,24 @@ contract('PLTToken', function(accounts) {
                 assert.deepEqual(await token.getControllers({from: roles.owner1}), [roles.owner2]);
             });
 
+            it("If owner delete controller (detachControllerByOwner), controller deleted", async function(){
+                const token = await deployToken();
+                await token.addController(roles.controller1, {from: roles.owner1})
+                await token.detachControllerByOwner(roles.controller1, {from: roles.owner1})
+                assert.deepEqual(await token.getControllers({from: roles.owner1}), []);
+            });
+
+            it("If owner delete controller one of 5 controller (detachControllerByOwner), another controllers exists", async function(){
+                const token = await deployToken();
+                await token.addController(accounts[2], {from: roles.owner1})
+                await token.addController(accounts[3], {from: roles.owner1})
+                await token.addController(accounts[4], {from: roles.owner1})
+                await token.addController(accounts[5], {from: roles.owner1})
+                await token.addController(accounts[6], {from: roles.owner1})
+                await token.detachControllerByOwner(accounts[2], {from: roles.owner1})
+                assert.deepEqual(await token.getControllers({from: roles.owner1}), [accounts[3], accounts[4], accounts[5], accounts[6]]);
+            });
+
             it("If owner add 5 controllers, controller added", async function(){
                 const token = await deployToken();
                 await token.addController(accounts[2], {from: roles.owner1})
@@ -111,7 +129,7 @@ contract('PLTToken', function(accounts) {
                 );
             });
 
-            it("If owner Disable controller, setController is disabled forever", async function() {
+            it("If owner disable controllers forever, setController is disabled forever", async function() {
                 const [token, controller] = await deployTokenWithController();
 
                 await token.detachControllersForever({from: roles.owner1});
@@ -147,7 +165,28 @@ contract('PLTToken', function(accounts) {
                 );
             });
 
-            it("If not owner addController, token raise error and controller not set", async function(){
+            it("If owner (not in controllers) detach controller by detachController func, token raise error", async function(){
+                const token = await deployToken();
+                try {
+                    await token.detachController({from: roles.owner1})
+                    assert.ok(false);
+                } catch(error) {
+                    assert.ok(true);
+                }
+            });
+
+            it("If controller (not in owners) detach controller by detachControllerByOwner func, token raise error", async function(){
+                const token = await deployToken();
+                await token.addController(roles.controller1, {from: roles.owner1})
+                try {
+                    await token.detachControllerByOwner(accounts[7], {from: roles.controller1})
+                    assert.ok(false);
+                } catch(error) {
+                    assert.ok(true);
+                }
+            });
+
+            it("If not owner add controller, token raise error and controller not set", async function(){
                 const token = await deployToken();
                 try {
                     await token.addController(roles.investor2, {from: roles.investor2})
@@ -158,7 +197,7 @@ contract('PLTToken', function(accounts) {
                 assert.deepEqual(await token.getControllers({from: roles.owner1}), []);
             });
 
-            it("If controller addController, token raise error and controller not set", async function(){
+            it("If controller add another controller, token raise error and controller not set", async function(){
                 const [token, controller] = await deployTokenWithController();
                 try {
                     await token.addController(roles.investor2, {from: controller})
@@ -170,7 +209,7 @@ contract('PLTToken', function(accounts) {
                 assert.deepEqual(await token.getControllers({from: roles.owner1}), [controller]);
             });
 
-            it("If not owner disable controller, token raise error and controller not set", async function() {
+            it("If not owner disable controllers forever, token raise error and controller not set", async function() {
                 const [token, controller] = await deployTokenWithController();
                 try {
                     await token.detachControllersForever({from: roles.nobody});
@@ -180,7 +219,7 @@ contract('PLTToken', function(accounts) {
                 }
             });
 
-            it("If controller disable controller, token raise error and controller not set", async function() {
+            it("If controller disable controllers forever, token raise error and controller not set", async function() {
                 const [token, controller] = await deployTokenWithController();
                 try {
                     await token.detachControllersForever({from: controller});

@@ -1,6 +1,9 @@
 'use strict';
 
 // testrpc has to be run as testrpc -u 0 -u 1
+
+import expectThrow from './helpers/expectThrow';
+
 const PLTToken = artifacts.require("./test_helpers/PLTTokenTestHelper.sol");
 
 const name = 'ICOPlate Token';
@@ -113,7 +116,7 @@ contract('PLTToken', function(accounts) {
                 await token.addController(accounts[5], {from: roles.owner1})
                 await token.addController(accounts[6], {from: roles.owner1})
                 await token.detachControllerByOwner(accounts[2], {from: roles.owner1})
-                assert.deepEqual(await token.getControllers({from: roles.owner1}), [accounts[3], accounts[4], accounts[5], accounts[6]]);
+                assert.deepEqual(token.getControllers({from: roles.owner1}), [accounts[3], accounts[4], accounts[5], accounts[6]]);
             });
 
             it("If owner add 5 controllers, controller added", async function(){
@@ -153,12 +156,7 @@ contract('PLTToken', function(accounts) {
                 await token.addController(accounts[4], {from: roles.owner1})
                 await token.addController(accounts[5], {from: roles.owner1})
                 await token.addController(accounts[6], {from: roles.owner1})
-                try {
-                    await token.addController(accounts[7], {from: roles.owner1})
-                    assert.ok(false);
-                } catch(error) {
-                    assert.ok(true);
-                }
+                await expectThrow(await token.addController(accounts[7], {from: roles.owner1}));
                 assert.deepEqual(
                     await token.getControllers({from: roles.nobody}),
                     [accounts[2], accounts[3], accounts[4], accounts[5], accounts[6]]

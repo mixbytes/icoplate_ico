@@ -11,7 +11,6 @@ contract PLTToken is CirculatingToken, MultiControlledMixin {
 
     event Mint(address indexed to, uint256 amount);
     event Burn(address indexed to, uint256 amount);
-    event Transfer(_to, this, _amount);
 
 
     /// @dev Allows token transfers
@@ -30,7 +29,7 @@ contract PLTToken is CirculatingToken, MultiControlledMixin {
     /// @dev burns tokens from address
     function burn(address _from, uint256 _amount) external onlyControllers {
         totalSupply = totalSupply.sub(_amount);
-        balances[_from] = balances[_to].sub(_amount);
+        balances[_from] = balances[_from].sub(_amount);
         Burn(_from, _amount);
         Transfer(_from, this, _amount);
     }

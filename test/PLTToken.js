@@ -205,7 +205,6 @@ contract('PLTToken', function(accounts) {
                 } catch(error) {
                     assert.ok(true);
                 }
-                console.log(roles.investor2)
                 assert.deepEqual(await token.getControllers({from: roles.owner1}), [controller]);
             });
 

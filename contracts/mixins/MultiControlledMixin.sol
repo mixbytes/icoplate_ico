@@ -75,16 +75,6 @@ contract MultiControlledMixin is Ownable {
         return false;
     }
 
-    /// @notice Gets controllers
-    /// @return memory array of controllers
-    function getControllers() public constant returns (address[]) {
-        address[] memory result = new address[](m_controllers.length);
-        for (uint i = 0; i < m_controllers.length; ++i)
-        result[i] = m_controllers[i];
-
-        return m_controllers;
-    }
-
     function getMaxControllers() public constant returns (uint){
         return 255;
     }

@@ -3,6 +3,7 @@
 // testrpc has to be run as testrpc -u 0 -u 1
 
 import expectThrow from './helpers/expectThrow';
+import skipException from './helpers/skipException';
 
 const PLTToken = artifacts.require("./test_helpers/PLTTokenTestHelper.sol");
 
@@ -69,7 +70,7 @@ contract('PLTToken', function(accounts) {
                 it("If start circulation again from controller, m_isCirculating not changed", async function() {
                     const [token, controller] = await deployTokenWithController();
                     await token.startCirculation({from: controller});
-                    await expectThrow(token.startCirculation({from: controller}));
+                    await skipException(token.startCirculation({from: controller}));
                     assert.equal(await token.m_isCirculating(), true);
                 });
                 it("m_isCirculating = true, if start circulation from controller, token raise error", async function() {
@@ -90,12 +91,12 @@ contract('PLTToken', function(accounts) {
                 it("m_isCirculating = true, if start circulation from owner, m_isCirculating not changed", async function() {
                     const [token, controller] = await deployTokenWithController();
                     token.startCirculation({from: controller});
-                    await expectThrow(token.startCirculation({from: roles.owner1}));
+                    await skipException(token.startCirculation({from: roles.owner1}));
                     assert.equal(await token.m_isCirculating(), true);
                 });
                 it("If start circulation from owner, m_isCirculating not changed", async function() {
                     const [token, controller] = await deployTokenWithController();
-                    await expectThrow(token.startCirculation({from: roles.owner1}));
+                    await skipException(token.startCirculation({from: roles.owner1}));
                     assert.equal(await token.m_isSetControllerDisabled(), false);
                 });
                 // nobody
@@ -105,7 +106,7 @@ contract('PLTToken', function(accounts) {
                 });
                 it("If start circulation from nobody, m_isCirculating not changed", async function() {
                     const token = await deployToken();
-                    await expectThrow(token.startCirculation({from: roles.nobody}));
+                    await skipException(token.startCirculation({from: roles.nobody}));
                     assert.equal(await token.m_isSetControllerDisabled(), false);
                 });
                 it("m_isCirculating = true, if start circulation from nobody, token raise error", async function() {
@@ -116,9 +117,106 @@ contract('PLTToken', function(accounts) {
                 it("m_isCirculating = true, if start circulation from nobody, m_isCirculating not changed", async function() {
                     const [token, controller] = await deployTokenWithController();
                     await token.startCirculation({from: controller});
-                    await expectThrow(token.startCirculation({from: roles.nobody}));
+                    await skipException(token.startCirculation({from: roles.nobody}));
                     assert.equal(await token.m_isCirculating(), true);
                 });
             });
+        });
+
+//
+//:white_large_square:
+
+//:white_large_square:
+//
+//:white_large_square:
+//
+
+        describe('Token Mint tests', function() {
+            describe('Positive', function() {
+                it("If mint from controller, token doesn't raise error", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    await token.mint(roles.investor1, PLT(1), {from: controller});
+                });
+                it("If mint from controller, amount>0, balance _to increase on _amount", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                    await token.mint(roles.investor1, PLT(1), {from: controller});
+                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, PLT(1));
+                });
+                it("If mint from controller, amount>0, totalSuply increase on _amount", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                    await token.mint(roles.investor1, PLT(1), {from: controller});
+                    assert.equal(await token.totalSupply() - startTotalSupply, PLT(1));
+                });
+                it("If mint from controller, amount=0, balance _to doesn't increase", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                    await token.mint(roles.investor1, 0, {from: controller});
+                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+                });
+                it("If mint from controller, amount=0, totalSuply doesn't increase", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                    await token.mint(roles.investor1, 0, {from: controller});
+                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
+                });
+            });
+
+            describe('Negative', function() {
+
+                it("If mint from controller, amount<0, token raise error", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    await expectThrow(token.mint(roles.investor1, -1, {from: controller}));
+                });
+                it("If mint from controller, amount<0, balance _to doesn't change", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                    await skipException(token.mint(roles.investor1, -1, {from: controller}));
+                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+                });
+                it("If mint from controller, amount<0, totalSuply doesn't change", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                    await skipException(token.mint(roles.investor1, -1, {from: controller}));
+                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
+                });
+
+                it("If mint from owner, token raise error", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    await expectThrow(token.mint(roles.investor1, 1, {from: roles.owner1}));
+                });
+                it("If mint from owner, _to balance not changed", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                    await skipException(token.mint(roles.investor1, 1, {from: roles.owner1}));
+                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+                });
+                it("If mint from owner, totalSuply not changed", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                    await skipException(token.mint(roles.investor1, 1, {from: roles.owner1}));
+                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
+                });
+
+                it("If mint from nobody, token raise error", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    await expectThrow(token.mint(roles.investor1, 1, {from: roles.nobody}));
+                });
+                it("If mint from nobody, _to balance not changed", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                    await skipException(token.mint(roles.investor1, 1, {from: roles.nobody}));
+                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+                });
+                it("If mint from nobody, totalSuply not changed", async function() {
+                    const [token, controller] = await deployTokenWithController();
+                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                    await skipException(token.mint(roles.investor1, 1, {from: roles.nobody}));
+                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
+                });
+            });
+
+
         });
 });

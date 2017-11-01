@@ -17,16 +17,18 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         SimpleCrowdsaleBase(token)
         ExternalAccountWalletConnector(funds)
     {
+        m_token = PLTToken(token);
     }
 
     /// @notice sale participation
-    function buy() public payable {
-        if (State.INIT == m_state && getCurrentTime() >= getStartTime())
+    function buy() public payable exceptsState(State.PAUSED) {
+        if (getCurrentState() == State.INIT && getCurrentTime() >= getStartTime())
             changeState(State.RUNNING);
 
-        require(State.RUNNING == m_state);
+        if (mustApplyTimeCheck(msg.sender, msg.value))
+            require(State.RUNNING == m_state);
 
-        return super.buy();
+        super.buy();
     }
 
     /// @notice Tests ownership of the current caller.

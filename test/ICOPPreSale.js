@@ -2,7 +2,7 @@
 
 // testrpc has to be run as testrpc -u 0 -u 1 -u 2 -u 3 -u 4 -u 5
 
-//import expectThrow from './helpers/expectThrow';
+import expectThrow from './helpers/expectThrow';
 //import {l, logEvents} from './helpers/debug';
 //import {instantiateCrowdsale} from './helpers/storiqa';
 
@@ -72,6 +72,26 @@ contract('ICOPPreSale', function(accounts) {
                 await preSale.transferOwnership(roles.owner1, {from: roles.owner1})
                 assert.equal(await preSale.owner(), roles.owner1);
             });
+
+            it("Owner can make investment before starting sale, but investor not", async function(){
+                const [preSale, token] = await deployTokenAndPreSale();
+
+                await token.addController(preSale.address, {from: roles.owner1});
+                await preSale.setTime(preSale._getStartTime() - 1, {from: roles.owner1});
+
+                console.log('Fuck1');
+                await expectThrow(preSale.buy({
+                    from: roles.investor1,
+                    value: web3.toWei(20, 'finney')
+                }));
+
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), 0);
+
+                console.log('Fuck2');
+                await preSale.buy({from: roles.owner1, value: web3.toWei(20, 'finney')});
+                console.log('Fuck3');
+                assert.isAbove(await token.balanceOf(roles.owner1, {from: roles.nobody}), 0);
+            });
         });
 
         describe('Negative', function() {
@@ -83,6 +103,14 @@ contract('ICOPPreSale', function(accounts) {
                 } catch(error) {
                     assert.ok(true);
                 }
+            });
+        });
+
+        describe('States', function() {
+            it("Can't invest during pause", async function() {
+                const [token, controller] = await deployTokenAndPreSale();
+
+                // TODO
             });
         });
 

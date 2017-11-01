@@ -14,6 +14,11 @@ contract StatefulMixin is Ownable {
         _;
     }
 
+    modifier exceptsState(State _state) {
+        require(m_state != _state);
+        _;
+    }
+
     /// @notice pauses sale
     function pause() external requiresState(State.RUNNING) onlyOwner
     {
@@ -48,6 +53,10 @@ contract StatefulMixin is Ownable {
 
         m_state = _newState;
         StateChanged(m_state);
+    }
+
+    function getCurrentState() internal returns(State) {
+        return m_state;
     }
 
     /// @dev state of sale

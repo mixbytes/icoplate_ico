@@ -35,13 +35,14 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
     }
 
     /// @notice sale participation
-    function buy() public payable {
-        if (State.INIT == m_state && getCurrentTime() >= getStartTime())
-            changeState(State.RUNNING);
+    function buy() public payable exceptsState(State.PAUSED) {
+        if (getCurrentState() == State.INIT && getCurrentTime() >= getStartTime())
+        changeState(State.RUNNING);
 
+        if (mustApplyTimeCheck(msg.sender, msg.value))
         require(State.RUNNING == m_state);
 
-        return super.buy();
+        super.buy();
     }
 
     function withdrawPayments() public payable requiresState(State.FAILED) {

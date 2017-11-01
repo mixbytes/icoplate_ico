@@ -24,6 +24,11 @@ contract ICOPPreSaleTestHelper is ICOPPreSale {
         m_time = time;
     }
 
+    function _getStartTime() external constant returns (uint) {
+        // Sun, 5 Nov 2017 0:00:00 GMT
+        return getStartTime();
+    }
+
     uint m_time;
 }
 

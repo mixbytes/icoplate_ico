@@ -55,7 +55,7 @@ contract StatefulMixin is Ownable {
         StateChanged(m_state);
     }
 
-    function getCurrentState() internal returns(State) {
+    function getCurrentState() internal constant returns(State) {
         return m_state;
     }
 

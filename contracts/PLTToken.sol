@@ -28,6 +28,8 @@ contract PLTToken is CirculatingToken, MultiControlledMixin {
 
     /// @dev burns tokens from address
     function burn(address _from, uint256 _amount) external onlyControllers {
+        uint256 balance = this.balanceOf(_from);
+        require(_amount < balance || _amount == balance);
         totalSupply = totalSupply.sub(_amount);
         balances[_from] = balances[_from].sub(_amount);
         Burn(_from, _amount);

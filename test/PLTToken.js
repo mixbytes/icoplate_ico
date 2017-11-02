@@ -123,100 +123,167 @@ contract('PLTToken', function(accounts) {
             });
         });
 
-//
-//:white_large_square:
+    describe('Token Mint tests', function() {
+        describe('Positive', function() {
+            it("If mint from controller, token doesn't raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(1), {from: controller});
+            });
+            it("If mint from controller, amount>0, balance _to increase on _amount", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                await token.mint(roles.investor1, PLT(1), {from: controller});
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, PLT(1));
+            });
+            it("If mint from controller, amount>0, totalSuply increase on _amount", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await token.mint(roles.investor1, PLT(1), {from: controller});
+                assert.equal(await token.totalSupply() - startTotalSupply, PLT(1));
+            });
+            it("If mint from controller, amount=0, balance _to doesn't increase", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                await token.mint(roles.investor1, 0, {from: controller});
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+            });
+            it("If mint from controller, amount=0, totalSuply doesn't increase", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await token.mint(roles.investor1, 0, {from: controller});
+                assert.equal(await token.totalSupply() - startTotalSupply, 0);
+            });
+        });
 
-//:white_large_square:
-//
-//:white_large_square:
-//
+        describe('Negative', function() {
 
-        describe('Token Mint tests', function() {
-            describe('Positive', function() {
-                it("If mint from controller, token doesn't raise error", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    await token.mint(roles.investor1, PLT(1), {from: controller});
-                });
-                it("If mint from controller, amount>0, balance _to increase on _amount", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
-                    await token.mint(roles.investor1, PLT(1), {from: controller});
-                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, PLT(1));
-                });
-                it("If mint from controller, amount>0, totalSuply increase on _amount", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
-                    await token.mint(roles.investor1, PLT(1), {from: controller});
-                    assert.equal(await token.totalSupply() - startTotalSupply, PLT(1));
-                });
-                it("If mint from controller, amount=0, balance _to doesn't increase", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
-                    await token.mint(roles.investor1, 0, {from: controller});
-                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
-                });
-                it("If mint from controller, amount=0, totalSuply doesn't increase", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
-                    await token.mint(roles.investor1, 0, {from: controller});
-                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
-                });
+            it("If mint from controller, amount<0, token raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await expectThrow(token.mint(roles.investor1, -1, {from: controller}));
+            });
+            it("If mint from controller, amount<0, balance _to doesn't change", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                await skipException(token.mint(roles.investor1, -1, {from: controller}));
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+            });
+            it("If mint from controller, amount<0, totalSuply doesn't change", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await skipException(token.mint(roles.investor1, -1, {from: controller}));
+                assert.equal(await token.totalSupply() - startTotalSupply, 0);
             });
 
-            describe('Negative', function() {
-
-                it("If mint from controller, amount<0, token raise error", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    await expectThrow(token.mint(roles.investor1, -1, {from: controller}));
-                });
-                it("If mint from controller, amount<0, balance _to doesn't change", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
-                    await skipException(token.mint(roles.investor1, -1, {from: controller}));
-                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
-                });
-                it("If mint from controller, amount<0, totalSuply doesn't change", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
-                    await skipException(token.mint(roles.investor1, -1, {from: controller}));
-                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
-                });
-
-                it("If mint from owner, token raise error", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    await expectThrow(token.mint(roles.investor1, 1, {from: roles.owner1}));
-                });
-                it("If mint from owner, _to balance not changed", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
-                    await skipException(token.mint(roles.investor1, 1, {from: roles.owner1}));
-                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
-                });
-                it("If mint from owner, totalSuply not changed", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
-                    await skipException(token.mint(roles.investor1, 1, {from: roles.owner1}));
-                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
-                });
-
-                it("If mint from nobody, token raise error", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    await expectThrow(token.mint(roles.investor1, 1, {from: roles.nobody}));
-                });
-                it("If mint from nobody, _to balance not changed", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startBalance = await token.balanceOf(roles.investor1, {from: controller});
-                    await skipException(token.mint(roles.investor1, 1, {from: roles.nobody}));
-                    assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
-                });
-                it("If mint from nobody, totalSuply not changed", async function() {
-                    const [token, controller] = await deployTokenWithController();
-                    const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
-                    await skipException(token.mint(roles.investor1, 1, {from: roles.nobody}));
-                    assert.equal(await token.totalSupply() - startTotalSupply, 0);
-                });
+            it("If mint from owner, token raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await expectThrow(token.mint(roles.investor1, 1, {from: roles.owner1}));
+            });
+            it("If mint from owner, _to balance not changed", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                await skipException(token.mint(roles.investor1, 1, {from: roles.owner1}));
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+            });
+            it("If mint from owner, totalSuply not changed", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await skipException(token.mint(roles.investor1, 1, {from: roles.owner1}));
+                assert.equal(await token.totalSupply() - startTotalSupply, 0);
             });
 
+            it("If mint from nobody, token raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await expectThrow(token.mint(roles.investor1, 1, {from: roles.nobody}));
+            });
+            it("If mint from nobody, _to balance not changed", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startBalance = await token.balanceOf(roles.investor1, {from: controller});
+                await skipException(token.mint(roles.investor1, 1, {from: roles.nobody}));
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}) - startBalance, 0);
+            });
+            it("If mint from nobody, totalSuply not changed", async function() {
+                const [token, controller] = await deployTokenWithController();
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await skipException(token.mint(roles.investor1, 1, {from: roles.nobody}));
+                assert.equal(await token.totalSupply() - startTotalSupply, 0);
+            });
+        });
+
+
+    });
+
+    describe('Token Burn tests', function(){
+       describe('Positive', function(){
+            it("If burn from controller, _amount < 0 , token raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await expectThrow(token.burn(roles.investor1, -1, {from: controller}));
+            });
+            it("If burn from controller, _amount < _from balance, token doesn't raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+            });
+            it("If burn from controller, _amount < _from balance, _from balance reduced by _amount", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                await token.burn(roles.investor1, PLT(5), {from: controller});
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), PLT(5));
+            });
+            it("If burn from controller, _amount < _from balance, totalSuply reduced by _amount", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await token.burn(roles.investor1, PLT(5), {from: controller});
+                const endTotalSupply = await token.totalSupply()
+                assert.equal(startTotalSupply - endTotalSupply, PLT(5));
+            });
+            it("If burn from controller, _amount = _from balance, token doesn't raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                await token.burn(roles.investor1, PLT(10), {from: controller});
+            });
+            it("If burn from controller, _amount = _from balance, _from balance = 0", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                await token.burn(roles.investor1, PLT(10), {from: controller});
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), 0);
+            });
+            it("If burn from controller, _amount = _from balance, totalSuply reduced by _amount", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await token.burn(roles.investor1, PLT(5), {from: controller});
+                const endTotalSupply = await token.totalSupply()
+                assert.equal(startTotalSupply - endTotalSupply, PLT(5));
+            });
+            it("If burn from controller, _amount > _from balance, token raise error", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                await expectThrow(token.burn(roles.investor1, PLT(20), {from: controller}));
+            });
+            it("If burn from controller, _amount > _from balance, _from balance not changed", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                const startBalance = await token.balanceOf(roles.investor1, {from: roles.nobody})
+                await skipException(token.burn(roles.investor1, PLT(20), {from: controller}));
+                console.log(startBalance);
+                console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}));
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), startBalance);
+            });
+            it("If burn from controller, _amount > _from balance, totalSuply not changed", async function() {
+                const [token, controller] = await deployTokenWithController();
+                await token.mint(roles.investor1, PLT(10), {from: controller});
+                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                await skip(token.burn(roles.investor1, PLT(20), {from: controller}));
+                const endTotalSupply = await token.totalSupply()
+                console.log(startTotalSupply);
+                console.log(endTotalSupply);
+                assert.equal(startTotalSupply, endTotalSupply);
+            });
+        });
+       describe('Negative', function(){
 
         });
+    });
+
+
 });

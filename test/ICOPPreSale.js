@@ -79,7 +79,6 @@ contract('ICOPPreSale', function(accounts) {
                 await token.addController(preSale.address, {from: roles.owner1});
                 await preSale.setTime(preSale._getStartTime() - 1, {from: roles.owner1});
 
-                console.log('Fuck1');
                 await expectThrow(preSale.buy({
                     from: roles.investor1,
                     value: web3.toWei(20, 'finney')
@@ -87,9 +86,8 @@ contract('ICOPPreSale', function(accounts) {
 
                 assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), 0);
 
-                console.log('Fuck2');
                 await preSale.buy({from: roles.owner1, value: web3.toWei(20, 'finney')});
-                console.log('Fuck3');
+
                 assert.isAbove(await token.balanceOf(roles.owner1, {from: roles.nobody}), 0);
             });
         });

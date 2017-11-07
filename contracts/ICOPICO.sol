@@ -23,6 +23,8 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         // TODO: use FixedTimeBonuses from solidity library
     }
 
+    // PUBLIC interface: maintenance
+
     function pause() external requiresState(State.RUNNING) onlyowner
     {
         changeState(State.PAUSED);
@@ -34,19 +36,28 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         changeState(State.RUNNING);
     }
 
+    function createMorePaymentChannels(uint limit) external onlyOwner returns (uint) {
+        return createMorePaymentChannelsInternal(limit);
+    }
+
+    // INTERNAL
+
     /// @notice sale participation
-    function buy() public payable exceptsState(State.PAUSED) {
+    function buyInternal(address investor, uint payment, uint extraBonuses)
+    internal
+    exceptsState(State.PAUSED)
+    {
         if (getCurrentState() == State.INIT && getCurrentTime() >= getStartTime())
-        changeState(State.RUNNING);
+            changeState(State.RUNNING);
 
-        if (mustApplyTimeCheck(msg.sender, msg.value))
-        require(State.RUNNING == m_state);
+        if (mustApplyTimeCheck(investor, payment))
+            require(State.RUNNING == m_state);
 
-        super.buy();
+        super.buyInternal(investor, payment, extraBonuses);
     }
 
     function withdrawPayments() public payable requiresState(State.FAILED) {
-        m_fundsAddress.withdrawPayments();
+        m_fundsAddress.withdrawPayments(msg.sender);
         m_token.burn(msg.sender, m_token.balanceOf(msg.sender));
     }
 
@@ -105,6 +116,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
         m_token.startCirculation();
         m_token.detachController();
+        detachControllersForever();
     }
 
     /// @dev called in case crowdsale failed

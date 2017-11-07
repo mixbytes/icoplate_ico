@@ -31,10 +31,16 @@ contract StatefulMixin is Ownable {
         changeState(State.RUNNING);
     }
 
-    /// @notice consider paused ICO as failed
+    /// @notice consider ICO as failed
     function fail() internal
     {
         changeState(State.FAILED);
+    }
+
+    /// @notice consider ICO as failed
+    function success() internal
+    {
+        changeState(State.SUCCEEDED);
     }
 
     function changeState(State _newState) internal {

@@ -117,6 +117,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         m_token.startCirculation();
         m_token.detachController();
         detachControllersForever();
+        success();
     }
 
     /// @dev called in case crowdsale failed

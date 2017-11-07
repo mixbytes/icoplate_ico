@@ -115,16 +115,15 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
     function wcOnCrowdsaleSuccess() internal {
         m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
         m_token.startCirculation();
-        m_token.detachController();
-        detachControllersForever();
-        success();
+        m_token.detachControllersForever();
+        changeState(State.SUCCEEDED);
     }
 
     /// @dev called in case crowdsale failed
     function wcOnCrowdsaleFailure() internal {
         // FIXME: here burn logic
         m_fundsAddress.changeState(FundsRegistry.State.REFUNDING);
-        fail();
+        changeState(State.FAILED);
         //m_token.detachController();
     }
 

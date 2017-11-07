@@ -11,7 +11,7 @@ contract StatefulMixinHelper is StatefulMixin {
 
     /// @notice consider paused ICO as failed
     function failPublic() external {
-        fail();
+        changeState(State.FAILED);
     }
 
     function changeStatePublic(State _newState) external {

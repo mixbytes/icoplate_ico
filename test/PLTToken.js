@@ -33,7 +33,7 @@ contract('PLTToken', function(accounts) {
     // converts amount of PLT into PLT-wei
     function PLT(amount) {
         return web3.toWei(amount, 'ether');
-    }
+    };
 
     async function deployToken() {
         const token = await PLTToken.new({from: roles.owner1});
@@ -273,7 +273,7 @@ contract('PLTToken', function(accounts) {
                 const [token, controller] = await deployTokenWithController();
                 await token.mint(roles.investor1, PLT(10), {from: controller});
                 const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
-                await skip(token.burn(roles.investor1, PLT(20), {from: controller}));
+                await skipException(token.burn(roles.investor1, PLT(20), {from: controller}));
                 const endTotalSupply = await token.totalSupply()
                 console.log(startTotalSupply);
                 console.log(endTotalSupply);

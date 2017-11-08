@@ -5,9 +5,9 @@
 import expectThrow from './helpers/expectThrow';
 import skipException from './helpers/skipException';
 
-const StatefulMixinHelper = artifacts.require("./test_helpers/StatefulMixinHelper.sol");
+const StatefulMixinTestHelper = artifacts.require("./test_helpers/StatefulMixinTestHelper.sol");
 
-contract('StatefulMixinHelper', function(accounts) {
+contract('StatefulMixinTestHelper', function(accounts) {
 
     const roles = {
         cash: accounts[0],
@@ -29,7 +29,7 @@ contract('StatefulMixinHelper', function(accounts) {
     }
 
     async function deployStatefulMixin() {
-        const StatefulMixin = await StatefulMixinHelper.new({from: roles.owner1});
+        const StatefulMixin = await StatefulMixinTestHelper.new({from: roles.owner1});
 
         return [StatefulMixin, roles.owner1];
     };
@@ -45,40 +45,6 @@ contract('StatefulMixinHelper', function(accounts) {
         assert.equal(await StatefulMixin.m_state(), '0');
     });
 
-    describe('Call fail()', function() {
-        it("If not owner call pause, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(1);
-            await expectThrow(StatefulMixin.pause({from:roles.nobody}));
-        });
-        it("If call fail and state is INIT, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await expectThrow(StatefulMixin.failPublic());
-        });
-        it("If call fail and state is RUNNING, state changed to FAILED", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(1);
-            await StatefulMixin.failPublic();
-            assert.equal(await StatefulMixin.m_state(), '3');
-        });
-        it("If call fail and state is PAUSED, state changed to FAILED", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(2);
-            await StatefulMixin.failPublic();
-            assert.equal(await StatefulMixin.m_state(), '3');
-        });
-        it("If call fail and state is FAILED, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(3);
-            await expectThrow(StatefulMixin.failPublic());
-        });
-        it("If call fail and state is SUCCEEDED, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(4);
-            await expectThrow(StatefulMixin.failPublic());
-        });
-    });
-
     describe('Call pause()', function() {
         it("If call pause and state is INIT, contract raise error", async function() {
             const [StatefulMixin, owner] = await deployStatefulMixin();
@@ -90,7 +56,7 @@ contract('StatefulMixinHelper', function(accounts) {
             await StatefulMixin.pause({from:owner});
             assert.equal(await StatefulMixin.m_state(), 2);
         });
-        it("If call pause and state is PAUSED, state changed to FAILED", async function() {
+        it("If call pause and state is PAUSED, contract raise error", async function() {
             const [StatefulMixin, owner] = await deployStatefulMixin();
             await StatefulMixin.setState(2);
             await expectThrow(StatefulMixin.pause({from:owner}));

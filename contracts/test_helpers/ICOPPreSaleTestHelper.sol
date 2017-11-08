@@ -1,10 +1,11 @@
 pragma solidity 0.4.15;
 
 import '../ICOPPreSale.sol';
+import "../test_helpers/StatefulMixinTestHelper.sol";
 
 
 /// @title ICOPPreSaleTestHelper pre-sale contract for test purposes. DON'T use it in production!
-contract ICOPPreSaleTestHelper is ICOPPreSale {
+contract ICOPPreSaleTestHelper is ICOPPreSale, StatefulMixinTestHelper {
     using SafeMath for uint256;
 
     function ICOPPreSaleTestHelper(address token, address funds)
@@ -27,6 +28,15 @@ contract ICOPPreSaleTestHelper is ICOPPreSale {
     function _getStartTime() external constant returns (uint) {
         // Sun, 5 Nov 2017 0:00:00 GMT
         return getStartTime();
+    }
+
+    function wcOnCrowdsaleSuccessPublic() external {
+        wcOnCrowdsaleSuccess();
+    }
+
+    /// @dev called in case crowdsale failed
+    function wcOnCrowdsaleFailurePublic() external {
+        wcOnCrowdsaleFailure();
     }
 
     uint m_time;

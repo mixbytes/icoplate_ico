@@ -44,127 +44,101 @@ contract('ICOPPreSale', function(accounts) {
         it("If CrowdSale success contract detach itself from controllers", async function(){
             const [CrowdSale, token] = await deployTokenAndCrowdSale();
             await token.addController(CrowdSale.address, {from: roles.owner1});
+            await CrowdSale.setState(1);
             await CrowdSale.wcOnCrowdsaleSuccessPublic({from: roles.owner1})
-
             assert.deepEqual(await token.getControllers({from: roles.owner1}), []);
         });
 
-//          TODO: expectThrow not catch error
-//        it("If call wcOnCrowdsaleSuccess by owner, contract raise error", async function(){
-//            const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//            await token.addController(CrowdSale.address, {from: roles.owner1});
-//            await expectThrow(CrowdSale.wcOnCrowdsaleSuccess({from: roles.owner1}))
-//        });
-//
-//        it("If call wcOnCrowdsaleSuccess by not owner, contract raise error", async function(){
-//            const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//            await token.addController(CrowdSale.address, {from: roles.owner1});
-//            await expectThrow(CrowdSale.wcOnCrowdsaleSuccess({from: roles.nobody}))
-//        });
+
 
     });
 
     describe('Function wcOnCrowdsaleFailure', function() {
-
         it("If CrowdSale fail contract detach itself from controllers", async function(){
             const [CrowdSale, token] = await deployTokenAndCrowdSale();
             await token.addController(CrowdSale.address, {from: roles.owner1});
+            await CrowdSale.setState(1);
             await CrowdSale.wcOnCrowdsaleFailurePublic({from: roles.owner1})
-
             assert.deepEqual(await token.getControllers({from: roles.owner1}), []);
         });
-
-//          TODO: expectThrow not catch error
-//        it("If call wcOnCrowdsaleFailure by owner, contract raise error", async function(){
-//            const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//            await token.addController(CrowdSale.address, {from: roles.owner1});
-//            await expectThrow(CrowdSale.wcOnCrowdsaleFailure({from: roles.owner1}))
-//        });
-//
-//        it("If call wcOnCrowdsaleFailure by not owner, contract raise error", async function(){
-//            const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//            await token.addController(CrowdSale.address, {from: roles.owner1});
-//            await expectThrow(CrowdSale.wcOnCrowdsaleFailure({from: roles.nobody}))
-//        });
-
     });
 
 
-//    describe('Token controller tests', function() {
-//        it("If owner call amIOwner, return true", async function(){
-//            const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//            await assert.ok(await CrowdSale.amIOwner({from: roles.owner1}))
-//        });
-//        it("If not owner call amIOwner, preSale raise error", async function(){
-//            const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//            try {
-//                await CrowdSale.amIOwner({from: roles.owner2})
-//                assert.ok(false);
-//            } catch(error) {
-//                assert.ok(true);
-//            }
-//        });
-//    });
-//
-//    describe('PreSale ownable tests', function() {
-//        describe('Positive', function() {
-//
-//            it("If deploy preSale by owner1, preSale owner set to owner1", async function(){
-//                const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//                assert.equal(await CrowdSale.owner(), roles.owner1);
-//            });
-//
-//            it("If owner transfer ownable, new owner set", async function(){
-//                const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//                await CrowdSale.transferOwnership(roles.owner2, {from: roles.owner1})
-//                assert.equal(await CrowdSale.owner(), roles.owner2);
-//            });
-//
-//            it("If owner transfer ownable to same owner, owner not changed", async function(){
-//                const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//                await CrowdSale.transferOwnership(roles.owner1, {from: roles.owner1})
-//                assert.equal(await CrowdSale.owner(), roles.owner1);
-//            });
-//
-//            it("Owner can make investment before starting sale, but investor not", async function(){
-//                const [CrowdSale, token] = await deployTokenAndCrowdSale();
-//
-//                await token.addController(CrowdSale.address, {from: roles.owner1});
-//                await CrowdSale.setTime(CrowdSale._getStartTime() - 1, {from: roles.owner1});
-//
-//                await expectThrow(CrowdSale.buy({
-//                    from: roles.investor1,
-//                    value: web3.toWei(20, 'finney')
-//                }));
-//
-//                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), 0);
-//
-//                await CrowdSale.buy({from: roles.owner1, value: web3.toWei(20, 'finney')});
-//
-//                assert.isAbove(await token.balanceOf(roles.owner1, {from: roles.nobody}), 0);
-//            });
-//        });
-//
-//        describe('Negative', function() {
-//            it("If not owner transfer ownable, token raise error and controller not set", async function() {
-//                const [token, controller] = await deployTokenAndCrowdSale();
-//                try {
-//                    await CrowdSale.transferOwnership(roles.owner3, {from: nobody})
-//                    assert.ok(false);
-//                } catch(error) {
-//                    assert.ok(true);
-//                }
-//            });
-//        });
-//
-//        describe('States', function() {
-//            it("Can't invest during pause", async function() {
-//                const [token, controller] = await deployTokenAndCrowdSale();
-//
-//                // TODO
-//            });
-//        });
-//
-//    });
+    describe('Token controller tests', function() {
+        it("If owner call amIOwner, return true", async function(){
+            const [CrowdSale, token] = await deployTokenAndCrowdSale();
+            await assert.ok(await CrowdSale.amIOwner({from: roles.owner1}))
+        });
+        it("If not owner call amIOwner, preSale raise error", async function(){
+            const [CrowdSale, token] = await deployTokenAndCrowdSale();
+            try {
+                await CrowdSale.amIOwner({from: roles.owner2})
+                assert.ok(false);
+            } catch(error) {
+                assert.ok(true);
+            }
+        });
+    });
+
+    describe('PreSale ownable tests', function() {
+        describe('Positive', function() {
+
+            it("If deploy preSale by owner1, preSale owner set to owner1", async function(){
+                const [CrowdSale, token] = await deployTokenAndCrowdSale();
+                assert.equal(await CrowdSale.owner(), roles.owner1);
+            });
+
+            it("If owner transfer ownable, new owner set", async function(){
+                const [CrowdSale, token] = await deployTokenAndCrowdSale();
+                await CrowdSale.transferOwnership(roles.owner2, {from: roles.owner1})
+                assert.equal(await CrowdSale.owner(), roles.owner2);
+            });
+
+            it("If owner transfer ownable to same owner, owner not changed", async function(){
+                const [CrowdSale, token] = await deployTokenAndCrowdSale();
+                await CrowdSale.transferOwnership(roles.owner1, {from: roles.owner1})
+                assert.equal(await CrowdSale.owner(), roles.owner1);
+            });
+
+            it("Owner can make investment before starting sale, but investor not", async function(){
+                const [CrowdSale, token] = await deployTokenAndCrowdSale();
+
+                await token.addController(CrowdSale.address, {from: roles.owner1});
+                await CrowdSale.setTime(CrowdSale._getStartTime() - 1, {from: roles.owner1});
+
+                await expectThrow(CrowdSale.buy({
+                    from: roles.investor1,
+                    value: web3.toWei(20, 'finney')
+                }));
+
+                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), 0);
+
+                await CrowdSale.buy({from: roles.owner1, value: web3.toWei(20, 'finney')});
+
+                assert.isAbove(await token.balanceOf(roles.owner1, {from: roles.nobody}), 0);
+            });
+        });
+
+        describe('Negative', function() {
+            it("If not owner transfer ownable, token raise error and controller not set", async function() {
+                const [token, controller] = await deployTokenAndCrowdSale();
+                try {
+                    await CrowdSale.transferOwnership(roles.owner3, {from: nobody})
+                    assert.ok(false);
+                } catch(error) {
+                    assert.ok(true);
+                }
+            });
+        });
+
+        describe('States', function() {
+            it("Can't invest during pause", async function() {
+                const [token, controller] = await deployTokenAndCrowdSale();
+
+                // TODO
+            });
+        });
+
+    });
 
 });

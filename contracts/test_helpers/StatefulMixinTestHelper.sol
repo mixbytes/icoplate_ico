@@ -3,15 +3,10 @@ pragma solidity 0.4.15;
 import '../mixins/StatefulMixin.sol';
 
 /// @title Stateful mixin add state to contact and handlers for it
-contract StatefulMixinHelper is StatefulMixin {
+contract StatefulMixinTestHelper is StatefulMixin {
 
-    function StatefulMixinHelper(){
+    function StatefulMixinTestHelper(){
 
-    }
-
-    /// @notice consider paused ICO as failed
-    function failPublic() external {
-        changeState(State.FAILED);
     }
 
     function changeStatePublic(State _newState) external {

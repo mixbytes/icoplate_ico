@@ -94,11 +94,13 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
 
     function wcOnCrowdsaleSuccess() internal {
         m_token.detachController();
+        changeState(State.SUCCEEDED);
     }
 
     /// @dev called in case crowdsale failed
     function wcOnCrowdsaleFailure() internal {
         m_token.detachController();
+        changeState(State.FAILED);
     }
 
     // FIELDS

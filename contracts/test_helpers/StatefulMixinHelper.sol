@@ -2,7 +2,7 @@ pragma solidity 0.4.15;
 
 import '../mixins/StatefulMixin.sol';
 
-/// @title Stateful mixin add state to contact and handlers for it
+/// @title StatefulMixinHelper for test purposes. DON'T use it in production!
 contract StatefulMixinHelper is StatefulMixin {
 
     function StatefulMixinHelper(){

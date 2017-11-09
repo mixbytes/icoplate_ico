@@ -6,7 +6,7 @@ import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import 'mixbytes-solidity/contracts/crowdsale/FundsRegistryWalletConnector.sol';
 import 'mixbytes-solidity/contracts/crowdsale/SimpleCrowdsaleBase.sol';
 import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
-
+import 'mixbytes-solidity/contracts/ownership/multiowned.sol';
 
 /// @title ICOPlate ICO contract
 contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistryWalletConnector, InvestmentAnalytics {
@@ -18,8 +18,6 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
     FundsRegistryWalletConnector(_owners, 2)
     {
         require(3 == _owners.length);
-
-        m_token = PLTToken(_token);
         // TODO: use FixedTimeBonuses from solidity library
     }
 
@@ -36,8 +34,12 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         changeState(State.RUNNING);
     }
 
-    function createMorePaymentChannels(uint limit) external onlyOwner returns (uint) {
+    function createMorePaymentChannels(uint limit) external onlyowner returns (uint) {
         return createMorePaymentChannelsInternal(limit);
+    }
+
+    function getToken() public constant returns (PLTToken) {
+        return PLTToken(address(m_token));
     }
 
     // INTERNAL
@@ -58,7 +60,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
 
     function withdrawPayments() public payable requiresState(State.FAILED) {
         m_fundsAddress.withdrawPayments(msg.sender);
-        m_token.burn(msg.sender, m_token.balanceOf(msg.sender));
+        getToken().burn(msg.sender, getToken().balanceOf(msg.sender));
     }
 
 
@@ -114,8 +116,8 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
 
     function wcOnCrowdsaleSuccess() internal {
         m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
-        m_token.startCirculation();
-        m_token.detachControllersForever();
+        getToken().startCirculation();
+        getToken().detachControllersForever();
         changeState(State.SUCCEEDED);
     }
 
@@ -134,6 +136,4 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
     /// @notice additional tokens bonus percent
     // FIXME: need details
     uint public constant c_PLTBonus = 40;
-
-    PLTToken public m_token;
 }

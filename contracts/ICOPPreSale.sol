@@ -17,7 +17,6 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         SimpleCrowdsaleBase(token)
         ExternalAccountWalletConnector(funds)
     {
-        m_token = PLTToken(token);
     }
 
     // PUBLIC interface: maintenance
@@ -32,6 +31,10 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     // addOwner/changeOwner and to isOwner.
     function amIOwner() external constant onlyOwner returns (bool) {
         return true;
+    }
+
+    function getToken() public constant returns (PLTToken) {
+        return PLTToken(address(m_token));
     }
 
     // INTERNAL
@@ -93,13 +96,13 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     }
 
     function wcOnCrowdsaleSuccess() internal {
-        m_token.detachController();
+        getToken().detachController();
         changeState(State.SUCCEEDED);
     }
 
     /// @dev called in case crowdsale failed
     function wcOnCrowdsaleFailure() internal {
-        m_token.detachController();
+        getToken().detachController();
         changeState(State.FAILED);
     }
 
@@ -112,6 +115,4 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     /// @notice additional tokens bonus percent
     // FIXME: need details
     uint public constant c_PLTBonus = 40;
-
-    PLTToken public m_token;
 }

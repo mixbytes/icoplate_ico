@@ -26,7 +26,7 @@
     "babel-preset-stage-3": "^6.17.0",
     "babel-register": "^6.23.0",
     "ethereumjs-testrpc": "^4.1.1",
-    "mixbytes-solidity": "git://github.com/mixbytes/solidity.git#withdraw_only_controller",
+    "mixbytes-solidity": "github:mixbytes/solidity#withdraw_only_controller",
     "mocha-lcov-reporter": "^1.3.0",
     "solidity-coverage": "^0.2.1",
     "truffle": "^3.4.6",

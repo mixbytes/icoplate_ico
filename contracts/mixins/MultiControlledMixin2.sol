@@ -55,7 +55,7 @@ contract MultiControlledMixin is Ownable {
     }
 
     function getMaxControllers() public constant returns (uint){
-        return 256;
+        return 10;
     }
 
     // INTERNAL METHODS

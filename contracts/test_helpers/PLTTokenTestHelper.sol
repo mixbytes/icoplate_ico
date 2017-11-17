@@ -14,5 +14,11 @@ contract PLTTokenTestHelper is PLTToken {
     function getControllers() public constant returns (address[]) {
         return m_controllers;
     }
+
+    /// For Crowdsale.js
+    function m_controller() public constant returns (address) {
+        return m_controllers[0];
+    }
+
 }
 

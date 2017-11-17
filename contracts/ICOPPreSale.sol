@@ -40,6 +40,7 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     // INTERNAL
 
     /// @notice sale participation
+
     function buyInternal(address investor, uint payment, uint extraBonuses)
     internal
     exceptsState(State.PAUSED)
@@ -47,8 +48,13 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         if (getCurrentState() == State.INIT && getCurrentTime() >= getStartTime())
             changeState(State.RUNNING);
 
-        if (mustApplyTimeCheck(investor, payment))
+        if (!mustApplyTimeCheck(investor, payment)) {
+            require(State.RUNNING == m_state || State.INIT == m_state);
+        }
+        else
+        {
             require(State.RUNNING == m_state);
+        }
 
         super.buyInternal(investor, payment, extraBonuses);
     }

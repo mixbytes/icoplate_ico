@@ -12,7 +12,7 @@ import 'mixbytes-solidity/contracts/ownership/multiowned.sol';
 contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistryWalletConnector, InvestmentAnalytics {
     using SafeMath for uint256;
 
-    function ICOPICO(address[] _owners, address _token, address _funds)
+    function ICOPICO(address[] _owners, address _token)
     multiowned(_owners, 2)
     SimpleCrowdsaleBase(_token)
     FundsRegistryWalletConnector(_owners, 2)
@@ -52,8 +52,13 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         if (getCurrentState() == State.INIT && getCurrentTime() >= getStartTime())
             changeState(State.RUNNING);
 
-        if (mustApplyTimeCheck(investor, payment))
+        if (!mustApplyTimeCheck(investor, payment)) {
+            require(State.RUNNING == m_state || State.INIT == m_state);
+        }
+        else
+        {
             require(State.RUNNING == m_state);
+        }
 
         super.buyInternal(investor, payment, extraBonuses);
     }

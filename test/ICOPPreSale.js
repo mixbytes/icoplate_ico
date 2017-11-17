@@ -2,16 +2,57 @@
 
 // testrpc has to be run as testrpc -u 0 -u 1 -u 2 -u 3 -u 4 -u 5
 
+require('babel-register');
+
+//import {crowdsaleUTest} from '../node_modules/mixbytes-solidity/test/utest/Crowdsale';
+//import expectThrow from '../node_modules/mixbytes-solidity/test/helpers/expectThrow';
+
+import {crowdsaleUTest} from './utest/Crowdsale';
 import expectThrow from './helpers/expectThrow';
-//import {l, logEvents} from './helpers/debug';
-//import {instantiateCrowdsale} from './helpers/storiqa';
+
 
 const ICOPPreSale = artifacts.require("./test_helpers/ICOPPreSaleTestHelper.sol");
 const PLTToken = artifacts.require("./test_helpers/PLTTokenTestHelper.sol");
 
 
-contract('ICOPPreSale', function(accounts) {
+const rate = 100000;
+const bonus = 40;
 
+// Crowdsale.js tests
+contract('ICOPPreSaleCrowdsaleTest', function(accounts) {
+    async function instantiate(role) {
+
+        const token = await PLTToken.new({from: role.owner1});
+        const crowdsale = await ICOPPreSale.new(token.address, role.owner3, {from: role.nobody});
+
+        await crowdsale.transferOwnership(role.owner1, {from: role.nobody});
+
+        await token.addController(crowdsale.address, {from: role.owner1});
+
+        return [crowdsale, token, role.owner3];
+    }
+
+    for (const [name, fn] of crowdsaleUTest(accounts, instantiate, {
+        extraPaymentFunction: 'buy',
+        rate: rate,
+        //
+        //softCap: web3.toWei(10, 'finney'),
+        startTime: 1509840000,
+        endTime: 1509840000 + 12*24*60*60,
+        maxTimeBonus: bonus,
+        firstPostICOTxFinishesSale: true,
+        postICOTxThrows: true,
+        hasAnalytics: true,
+        analyticsPaymentBonus: 0,
+        // No circulation
+        tokenTransfersDuringSale: false
+    }))
+        it(name, fn);
+});
+
+
+// Additional tests
+contract('ICOPPreSale', function(accounts) {
     const roles = {
         cash: accounts[0],
         owner3: accounts[0],
@@ -26,6 +67,8 @@ contract('ICOPPreSale', function(accounts) {
     async function deployTokenAndCrowdSale() {
         const token = await PLTToken.new({from: roles.owner1});
         const CrowdSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.owner1});
+
+        await token.addController(CrowdSale.address, {from: roles.owner1});
 
         return [CrowdSale, token];
     }
@@ -112,16 +155,14 @@ contract('ICOPPreSale', function(accounts) {
                 }));
 
                 assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), 0);
-
                 await CrowdSale.buy({from: roles.owner1, value: web3.toWei(20, 'finney')});
-
-                assert.isAbove(await token.balanceOf(roles.owner1, {from: roles.nobody}), 0);
+                assert.isAbove(await token.balanceOf(roles.owner1, {from: roles.nobody}), (20*rate)*(100+bonus)/100);
             });
         });
 
         describe('Negative', function() {
             it("If not owner transfer ownable, token raise error and controller not set", async function() {
-                const [token, controller] = await deployTokenAndCrowdSale();
+                const [CrowdSale, token] = await deployTokenAndCrowdSale();
                 try {
                     await CrowdSale.transferOwnership(roles.owner3, {from: nobody})
                     assert.ok(false);
@@ -133,12 +174,11 @@ contract('ICOPPreSale', function(accounts) {
 
         describe('States', function() {
             it("Can't invest during pause", async function() {
-                const [token, controller] = await deployTokenAndCrowdSale();
+                const [CrowdSale, token] = await deployTokenAndCrowdSale();
 
                 // TODO
             });
         });
 
     });
-
 });

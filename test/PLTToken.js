@@ -32,7 +32,7 @@ contract('PLTToken', function(accounts) {
 
     // converts amount of PLT into PLT-wei
     function PLT(amount) {
-        return web3.toWei(amount, 'ether');
+        return web3.toWei(amount, 'finney');
     };
 
     async function deployToken() {
@@ -46,7 +46,7 @@ contract('PLTToken', function(accounts) {
 
         await token.addController(roles.controller1, {from: roles.owner1});
 
-        return [token, roles.owner2];
+        return [token, roles.controller1];
     };
 
     describe('Token circulation tests', function() {
@@ -264,21 +264,18 @@ contract('PLTToken', function(accounts) {
             it("If burn from controller, _amount > _from balance, _from balance not changed", async function() {
                 const [token, controller] = await deployTokenWithController();
                 await token.mint(roles.investor1, PLT(10), {from: controller});
-                const startBalance = await token.balanceOf(roles.investor1, {from: roles.nobody})
-                await skipException(token.burn(roles.investor1, PLT(20), {from: controller}));
-                console.log(startBalance);
-                console.log(await token.balanceOf(roles.investor1, {from: roles.nobody}));
-                assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), startBalance);
+                const startBalance = await token.balanceOf(roles.investor1, {from: roles.nobody});
+                await expectThrow(token.burn(roles.investor1, PLT(20), {from: controller}));
+                const endBalance = await token.balanceOf(roles.investor1, {from: roles.nobody});
+                assert.equal(parseInt(endBalance), parseInt(startBalance));
             });
             it("If burn from controller, _amount > _from balance, totalSuply not changed", async function() {
                 const [token, controller] = await deployTokenWithController();
                 await token.mint(roles.investor1, PLT(10), {from: controller});
-                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
-                await skipException(token.burn(roles.investor1, PLT(20), {from: controller}));
-                const endTotalSupply = await token.totalSupply()
-                console.log(startTotalSupply);
-                console.log(endTotalSupply);
-                assert.equal(startTotalSupply, endTotalSupply);
+                const startTotalSupply = await token.totalSupply();
+                await expectThrow(token.burn(roles.investor1, PLT(20), {from: controller}));
+                const endTotalSupply = await token.totalSupply();
+                assert.equal(parseInt(startTotalSupply), parseInt(endTotalSupply));
             });
         });
        describe('Negative', function(){

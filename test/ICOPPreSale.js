@@ -4,6 +4,7 @@
 
 require('babel-register');
 
+// FIXME: use import from solidity library. No Copy-paste. Fix problem with babel
 //import {crowdsaleUTest} from '../node_modules/mixbytes-solidity/test/utest/Crowdsale';
 //import expectThrow from '../node_modules/mixbytes-solidity/test/helpers/expectThrow';
 
@@ -21,7 +22,6 @@ const bonus = 40;
 // Crowdsale.js tests
 contract('ICOPPreSaleCrowdsaleTest', function(accounts) {
     async function instantiate(role) {
-
         const token = await PLTToken.new({from: role.owner1});
         const crowdsale = await ICOPPreSale.new(token.address, role.owner3, {from: role.nobody});
 

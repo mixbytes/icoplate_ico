@@ -9,12 +9,12 @@ import 'mixbytes-solidity/contracts/crowdsale/InvestmentAnalytics.sol';
 import 'mixbytes-solidity/contracts/ownership/multiowned.sol';
 
 /// @title ICOPlate ICO contract
-contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistryWalletConnector, InvestmentAnalytics {
+contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnector, InvestmentAnalytics, StatefulMixin {
     using SafeMath for uint256;
 
     function ICOPICO(address[] _owners, address _token)
-    multiowned(_owners, 2)
     SimpleCrowdsaleBase(_token)
+    multiowned(_owners, 2)
     FundsRegistryWalletConnector(_owners, 2)
     {
         require(3 == _owners.length);
@@ -38,6 +38,11 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         return createMorePaymentChannelsInternal(limit);
     }
 
+    function iaOnInvested(address investor, uint payment, bool /*usingPaymentChannel*/) internal
+    {
+        buyInternal(investor, payment, 0);
+    }
+
     function getToken() public constant returns (PLTToken) {
         return PLTToken(address(m_token));
     }
@@ -59,9 +64,9 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
         {
             require(State.RUNNING == m_state);
         }
-
         super.buyInternal(investor, payment, extraBonuses);
     }
+
 
     function withdrawPayments() public payable requiresState(State.FAILED) {
         m_fundsAddress.withdrawPayments(msg.sender);
@@ -128,10 +133,8 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, StatefulMixin, FundsRegistr
 
     /// @dev called in case crowdsale failed
     function wcOnCrowdsaleFailure() internal {
-        // FIXME: here burn logic
         m_fundsAddress.changeState(FundsRegistry.State.REFUNDING);
         changeState(State.FAILED);
-        //m_token.detachController();
     }
 
     /// @notice starting exchange rate of PLT

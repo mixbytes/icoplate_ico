@@ -65,6 +65,12 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
             require(State.RUNNING == m_state);
         }
         super.buyInternal(investor, payment, extraBonuses);
+
+        // Allows to send ether from funds after reaching the soft cap
+        if (getWeiCollected() >= getMinimumFunds() && m_fundsAddress.m_state() != FundsRegistry.State.SUCCEEDED) {
+            m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
+        }
+        //
     }
 
 
@@ -125,7 +131,10 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
     }
 
     function wcOnCrowdsaleSuccess() internal {
-        m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
+        if (m_fundsAddress.m_state() != FundsRegistry.State.SUCCEEDED) {
+            m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
+        }
+
         getToken().startCirculation();
         getToken().detachControllersForever();
         changeState(State.SUCCEEDED);

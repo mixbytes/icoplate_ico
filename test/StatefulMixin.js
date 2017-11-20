@@ -45,68 +45,6 @@ contract('StatefulMixinTestHelper', function(accounts) {
         assert.equal(await StatefulMixin.m_state(), '0');
     });
 
-    describe('Call pause()', function() {
-        it("If call pause and state is INIT, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await expectThrow(StatefulMixin.pause({from:owner}));
-        });
-        it("If call pause and state is RUNNING, state changed to PAUSED", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(1);
-            await StatefulMixin.pause({from:owner});
-            assert.equal(await StatefulMixin.m_state(), 2);
-        });
-        it("If call pause and state is PAUSED, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(2);
-            await expectThrow(StatefulMixin.pause({from:owner}));
-        });
-        it("If call pause and state is FAILED, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(3);
-            await expectThrow(StatefulMixin.pause({from:owner}));
-        });
-        it("If call pause and state is SUCCEEDED, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(4);
-            await expectThrow(StatefulMixin.pause({from:owner}));
-        });
-    });
-
-    describe('Call unpause()', function() {
-
-        it("If not owner call unpause, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(2);
-            await expectThrow(StatefulMixin.unpause({from:roles.nobody}));
-        });
-        it("If call fail and state is INIT, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await expectThrow(StatefulMixin.unpause({from:owner}));
-        });
-        it("If call unpause and state is RUNNING, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(1);
-            await expectThrow(StatefulMixin.unpause({from:owner}));
-        });
-        it("If call unpause and state is PAUSED, state changed to RUNNING", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(2);
-            await StatefulMixin.unpause({from:owner});
-            assert.equal(await StatefulMixin.m_state({from:owner}), 1);
-        });
-        it("If call unpause and state is FAILED, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(3);
-            await expectThrow(StatefulMixin.unpause({from:owner}));
-        });
-        it("If call unpause and state is SUCCEEDED, contract raise error", async function() {
-            const [StatefulMixin, owner] = await deployStatefulMixin();
-            await StatefulMixin.setState(4);
-            await expectThrow(StatefulMixin.unpause({from:owner}));
-        });
-    });
-
     describe('Change state INIT', function() {
         it("If change State INIT to INIT throw function changeState, contract raise error", async function() {
             const [StatefulMixin, owner] = await deployStatefulMixin();

@@ -25,6 +25,18 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         return createMorePaymentChannelsInternal(limit);
     }
 
+    /// @notice pauses sale
+    function pause() external requiresState(State.RUNNING) onlyOwner
+    {
+        changeState(State.PAUSED);
+    }
+
+    /// @notice resume paused sale
+    function unpause() external requiresState(State.PAUSED) onlyOwner
+    {
+        changeState(State.RUNNING);
+    }
+
     /// @notice Tests ownership of the current caller.
     /// @return true if it's an owner
     // It's advisable to call it by new owner to make sure that the same erroneous address is not copy-pasted to

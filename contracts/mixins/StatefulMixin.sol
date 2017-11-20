@@ -1,10 +1,8 @@
 pragma solidity 0.4.15;
 
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-
 
 /// @title Stateful mixin add state to contact and handlers for it
-contract StatefulMixin is Ownable {
+contract StatefulMixin {
     enum State { INIT, RUNNING, PAUSED, FAILED, SUCCEEDED }
 
     event StateChanged(State _state);
@@ -17,18 +15,6 @@ contract StatefulMixin is Ownable {
     modifier exceptsState(State _state) {
         require(m_state != _state);
         _;
-    }
-
-    /// @notice pauses sale
-    function pause() external requiresState(State.RUNNING) onlyOwner
-    {
-        changeState(State.PAUSED);
-    }
-
-    /// @notice resume paused sale
-    function unpause() external requiresState(State.PAUSED) onlyOwner
-    {
-        changeState(State.RUNNING);
     }
 
     function changeState(State _newState) internal {

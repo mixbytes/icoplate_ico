@@ -226,8 +226,12 @@ contract('PLTToken', function(accounts) {
             it("If burn from controller, _amount < _from balance, _from balance reduced by _amount", async function() {
                 const [token, controller] = await deployTokenWithController();
                 await token.mint(roles.investor1, PLT(10), {from: controller});
+
+                assert.equal(await token.balanceOfDuringSale(roles.investor1, {from: controller}), PLT(10));
                 await token.burn(roles.investor1, PLT(5), {from: controller});
+
                 assert.equal(await token.balanceOf(roles.investor1, {from: roles.nobody}), PLT(5));
+                assert.equal(await token.balanceOfDuringSale(roles.investor1, {from: controller}), PLT(5));
             });
             it("If burn from controller, _amount < _from balance, totalSuply reduced by _amount", async function() {
                 const [token, controller] = await deployTokenWithController();

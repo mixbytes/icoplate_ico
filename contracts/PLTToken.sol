@@ -11,9 +11,8 @@ import 'mixbytes-solidity/contracts/token/MintableToken.sol';
 contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
     using SafeMath for uint256;
 
-    event Mint(address indexed to, uint256 amount);
-    event Burn(address indexed to, uint256 amount);
-
+    event Mint(address indexed to, uint256 amount, address sale);
+    event Burn(address indexed to, uint256 amount, address sale);
 
     /// @dev Allows token transfers
     function startCirculation() external onlyControllers {
@@ -24,8 +23,9 @@ contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
     function mint(address _to, uint256 _amount) external onlyControllers {
         totalSupply = totalSupply.add(_amount);
         balances[_to] = balances[_to].add(_amount);
+        salesBalances[msg.sender][_to] = salesBalances[msg.sender][_to].add(_amount);
         Transfer(this, _to, _amount);
-        Mint(_to, _amount);
+        Mint(_to, _amount, msg.sender);
     }
 
     /// @dev burns tokens from address
@@ -34,8 +34,14 @@ contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
         require(_amount <= balance);
         totalSupply = totalSupply.sub(_amount);
         balances[_from] = balances[_from].sub(_amount);
-        Burn(_from, _amount);
+        salesBalances[msg.sender][_from] = salesBalances[msg.sender][_from].sub(_amount);
+        Burn(_from, _amount, msg.sender);
         Transfer(_from, this, _amount);
+    }
+
+    /// @dev balance of tokens for investor during certain crowdsale
+    function balanceOfDuringSale(address _owner) onlyControllers external constant returns (uint256)  {
+        return salesBalances[msg.sender][_owner];
     }
 
     // FIELDS
@@ -43,4 +49,5 @@ contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
     string public constant symbol = 'PLT';
     uint8 public constant decimals = 18;
 
+    mapping(address => mapping(address => uint256)) salesBalances;
 }

@@ -73,12 +73,10 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
         //
     }
 
-
     function withdrawPayments() public payable requiresState(State.FAILED) {
         m_fundsAddress.withdrawPayments(msg.sender);
-        getToken().burn(msg.sender, getToken().balanceOf(msg.sender));
+        getToken().burn(msg.sender, getToken().balanceOfDuringSale(msg.sender));
     }
-
 
     /// @notice Tests ownership of the current caller.
     /// @return true if it's an owner

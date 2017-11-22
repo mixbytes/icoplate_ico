@@ -12,6 +12,8 @@ import {crowdsaleUTest} from './utest/Crowdsale';
 import expectThrow from './helpers/expectThrow';
 
 const ICOPICO = artifacts.require("./test_helpers/ICOPICOTestHelper.sol");
+const ICOPPreSale = artifacts.require("./test_helpers/ICOPPreSaleTestHelper.sol");
+
 const PLTToken = artifacts.require("./test_helpers/PLTTokenTestHelper.sol");
 const FundsRegistry = artifacts.require("./mixbytes-solidity/contracts/crowdsale/FundsRegistry.sol");
 
@@ -20,6 +22,7 @@ const bonus = 40;
 
 
 // Crowdsale.js tests
+
 contract('ICOPICOCrowdsaleTest', function(accounts) {
     async function instantiate(role) {
         const token = await PLTToken.new({from: role.owner1});
@@ -53,4 +56,109 @@ contract('ICOPICOCrowdsaleTest', function(accounts) {
         it(name, fn);
 });
 
+
+// Additional tests
+contract('ICOPICO', function(accounts) {
+    const roles = {
+        cash: accounts[0],
+        owner3: accounts[0],
+        owner1: accounts[1],
+        owner2: accounts[2],
+        investor1: accounts[2],
+        investor2: accounts[3],
+        investor3: accounts[4],
+        nobody: accounts[5]
+    };
+
+    async function deployTokenAndCrowdSale() {
+        const token = await PLTToken.new({from: roles.owner1});
+        const CrowdSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.owner1});
+
+        await token.addController(CrowdSale.address, {from: roles.owner1});
+
+        return [CrowdSale, token];
+    }
+
+    describe('Withdraw', function() {
+        /**
+         * Start pre-sale. investors buy tokens.
+         * Then finish pre-sale ans start ICO. New and old investors buy tokens, but soft cap is not reached.
+         * Investors start to withdraw their money back.
+         */
+
+        it("Withdraw integration test", async function(){
+            const token = await PLTToken.new({from: roles.owner1});
+            const presale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.owner1});
+
+            const ico = await ICOPICO.new(
+                [roles.owner1, roles.owner2, roles.owner3], token.address, {from: roles.nobody, gas: 30000000}
+            );
+
+            const funds = await FundsRegistry.at(await ico.getFundsAddress());
+
+            // Pre-sale
+            await token.addController(presale.address, {from: roles.owner1});
+
+            let startTs = await presale._getStartTime();
+            await presale.setTime(startTs.plus(1), {from: roles.owner1});
+
+            presale.buy({
+                    from: roles.investor1,
+                    value: web3.toWei(20, 'finney')
+            })
+            presale.buy({
+                    from: roles.investor2,
+                    value: web3.toWei(30, 'finney')
+            })
+
+            let balance = await token.balanceOf(roles.investor1, {from: roles.nobody});
+            assert(balance.eq(new web3.BigNumber('2.8e+21')));
+            balance = await token.balanceOf(roles.investor2, {from: roles.nobody});
+            assert(balance.eq(new web3.BigNumber('4.2e+21')));
+
+            let endTs = await presale._getStartTime();
+            await presale.setTime(endTs.plus(1), {from: roles.owner1});
+            startTs = await presale._getStartTime();
+            await ico.setTime(startTs.plus(1), {from: roles.owner1});
+
+            // ICO
+            await token.addController(ico.address, {from: roles.owner1});
+
+            ico.buy({
+                    from: roles.investor1,
+                    value: web3.toWei(30, 'finney')
+            })
+            ico.buy({
+                    from: roles.investor2,
+                    value: web3.toWei(40, 'finney')
+            })
+
+            ico.buy({
+                    from: roles.investor3,
+                    value: web3.toWei(20, 'finney')
+            })
+
+            endTs = await presale._getEndTime();
+            await ico.setTime(endTs.plus(1), {from: roles.owner1});
+
+            balance = await token.balanceOf(roles.investor1, {from: roles.nobody});
+            assert(balance.eq(new web3.BigNumber('7.0e+21')));
+            balance = await token.balanceOf(roles.investor2, {from: roles.nobody});
+            assert(balance.eq(new web3.BigNumber('9.8e+21')));
+            balance = await token.balanceOf(roles.investor3, {from: roles.nobody});
+            assert(balance.eq(new web3.BigNumber('2.8e+21')));
+
+            await ico.withdrawPayments({from: roles.investor1});
+            await ico.withdrawPayments({from: roles.investor2});
+            await ico.withdrawPayments({from: roles.investor3});
+
+            balance = await token.balanceOf(roles.investor1, {from: roles.nobody});
+            assert(balance.eq(new web3.BigNumber('2.8e+21')));
+            balance = await token.balanceOf(roles.investor2, {from: roles.nobody});
+            assert(balance.eq(new web3.BigNumber('4.2e+21')));
+            balance = await token.balanceOf(roles.investor3, {from: roles.nobody});
+            assert(balance.eq(0));
+        });
+    });
+});
 

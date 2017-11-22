@@ -12,6 +12,9 @@ import 'mixbytes-solidity/contracts/ownership/multiowned.sol';
 contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnector, InvestmentAnalytics, StatefulMixin {
     using SafeMath for uint256;
 
+    event Withdraw(address payee, uint amount);
+
+
     function ICOPICO(address[] _owners, address _token)
     SimpleCrowdsaleBase(_token)
     multiowned(_owners, 2)
@@ -73,9 +76,19 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
         //
     }
 
-    function withdrawPayments() public payable requiresState(State.FAILED) {
+    function withdrawPayments() public payable {
+        if (getCurrentTime() >= getEndTime())
+            finish();
+
+        require(State.FAILED == m_state);
+
         m_fundsAddress.withdrawPayments(msg.sender);
-        getToken().burn(msg.sender, getToken().balanceOfDuringSale(msg.sender));
+
+        uint amount = getToken().balanceOfDuringSale(msg.sender);
+
+        getToken().burn(msg.sender, amount);
+
+        Withdraw(msg.sender, amount);
     }
 
     /// @notice Tests ownership of the current caller.

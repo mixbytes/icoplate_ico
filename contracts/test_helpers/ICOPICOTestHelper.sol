@@ -30,6 +30,10 @@ contract ICOPICOTestHelper is ICOPICO, StatefulMixinTestHelper {
         return getStartTime();
     }
 
+    function _getEndTime() external constant returns (uint) {
+        return getEndTime();
+    }
+
     function wcOnCrowdsaleSuccessPublic() external {
         wcOnCrowdsaleSuccess();
     }

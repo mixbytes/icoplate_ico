@@ -40,7 +40,7 @@ contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
     }
 
     /// @dev balance of tokens for investor during certain crowdsale
-    function balanceOfDuringSale(address _owner) onlyControllers external constant returns (uint256)  {
+    function balanceOfDuringSale(address _owner) external constant returns (uint256)  {
         return salesBalances[msg.sender][_owner];
     }
 

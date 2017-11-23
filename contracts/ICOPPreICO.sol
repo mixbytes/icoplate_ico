@@ -23,7 +23,7 @@ contract ICOPPreICO is ICOPPreSale {
 
     /// @notice minimal amount of investment
     function getMinInvestment() public constant returns (uint) {
-        return 20 finney;
+        return 10 finney;
     }
 
     /// @notice starting exchange rate of PLT

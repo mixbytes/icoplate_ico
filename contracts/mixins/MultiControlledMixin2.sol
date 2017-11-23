@@ -4,7 +4,7 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 
 /// @title Stateful mixin add state to contact and handlers for it
-contract MultiControlledMixin is Ownable {
+contract MultiControlledMixin2 is Ownable {
 
     event ControllerAdded(address controller);
     event ControllerRetired(address controller);

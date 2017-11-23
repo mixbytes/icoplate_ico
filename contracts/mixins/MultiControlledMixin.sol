@@ -76,7 +76,7 @@ contract MultiControlledMixin is Ownable {
     }
 
     function getMaxControllers() public constant returns (uint){
-        return 8096;
+        return 100;
     }
 
     // FIELDS

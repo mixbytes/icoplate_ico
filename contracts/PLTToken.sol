@@ -20,11 +20,11 @@ contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
     }
 
     /// @dev mints new tokens
-    function mint(address _to, uint256 _amount) external onlyControllers {
+    function mint(address _to, uint256 _amount) public onlyControllers {
         totalSupply = totalSupply.add(_amount);
         balances[_to] = balances[_to].add(_amount);
         salesBalances[msg.sender][_to] = salesBalances[msg.sender][_to].add(_amount);
-        Transfer(this, _to, _amount);
+        Transfer(address(0), _to, _amount);
         Mint(_to, _amount, msg.sender);
     }
 
@@ -36,7 +36,7 @@ contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
         balances[_from] = balances[_from].sub(_amount);
         salesBalances[msg.sender][_from] = salesBalances[msg.sender][_from].sub(_amount);
         Burn(_from, _amount, msg.sender);
-        Transfer(_from, this, _amount);
+        Transfer(_from, address(0), _amount);
     }
 
     /// @dev balance of tokens for investor during certain crowdsale

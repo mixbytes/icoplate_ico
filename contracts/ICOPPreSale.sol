@@ -31,6 +31,11 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
         changeState(State.PAUSED);
     }
 
+    function fail() external requiresState(State.PAUSED) onlyOwner
+    {
+        wcOnCrowdsaleFailure();
+    }
+
     /// @notice resume paused sale
     function unpause() external requiresState(State.PAUSED) onlyOwner
     {

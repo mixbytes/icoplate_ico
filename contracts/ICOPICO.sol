@@ -31,6 +31,11 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
         changeState(State.PAUSED);
     }
 
+    function fail() external requiresState(State.PAUSED) onlymanyowners(keccak256(msg.data))
+    {
+        wcOnCrowdsaleFailure();
+    }
+
     /// @notice resume paused sale
     function unpause() external requiresState(State.PAUSED) onlymanyowners(keccak256(msg.data))
     {

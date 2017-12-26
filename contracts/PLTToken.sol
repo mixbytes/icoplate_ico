@@ -1,5 +1,4 @@
-pragma solidity 0.4.15;
-
+pragma solidity 0.4.18;
 
 import 'mixbytes-solidity/contracts/token/CirculatingToken.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
@@ -8,7 +7,7 @@ import 'mixbytes-solidity/contracts/token/MintableToken.sol';
 
 
 /// @title ICOPlate coin contract
-contract PLTToken is MintableToken, CirculatingToken, MultiControlledMixin {
+contract PLTToken is CirculatingToken, MultiControlledMixin {
     using SafeMath for uint256;
 
     event Mint(address indexed to, uint256 amount, address sale);

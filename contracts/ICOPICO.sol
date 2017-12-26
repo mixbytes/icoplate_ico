@@ -1,4 +1,4 @@
-pragma solidity 0.4.15;
+pragma solidity 0.4.18;
 
 import './PLTToken.sol';
 import './mixins/StatefulMixin.sol';
@@ -32,7 +32,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
     }
 
     /// @notice resume paused sale
-    function unpause() external requiresState(State.PAUSED) onlymanyowners(sha3(msg.data))
+    function unpause() external requiresState(State.PAUSED) onlymanyowners(keccak256(msg.data))
     {
         changeState(State.RUNNING);
     }
@@ -76,11 +76,13 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
         //
     }
 
-    function withdrawPayments() public payable {
+    function withdrawPayments() public {
         if (getCurrentTime() >= getEndTime())
             finish();
 
         require(State.FAILED == m_state);
+
+        uint balanceToWithdraw = m_fundsAddress.m_weiBalances(msg.sender);
 
         m_fundsAddress.withdrawPayments(msg.sender);
 
@@ -88,7 +90,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
 
         getToken().burn(msg.sender, amount);
 
-        Withdraw(msg.sender, amount);
+        Withdraw(msg.sender, balanceToWithdraw);
     }
 
     /// @notice Tests ownership of the current caller.

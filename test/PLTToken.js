@@ -137,7 +137,7 @@ contract('PLTToken', function(accounts) {
             });
             it("If mint from controller, amount>0, totalSuply increase on _amount", async function() {
                 const [token, controller] = await deployTokenWithController();
-                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                const startTotalSupply = await token.totalSupply();
                 await token.mint(roles.investor1, PLT(1), {from: controller});
                 assert.equal(await token.totalSupply() - startTotalSupply, PLT(1));
             });
@@ -149,7 +149,7 @@ contract('PLTToken', function(accounts) {
             });
             it("If mint from controller, amount=0, totalSuply doesn't increase", async function() {
                 const [token, controller] = await deployTokenWithController();
-                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                const startTotalSupply = await token.totalSupply();
                 await token.mint(roles.investor1, 0, {from: controller});
                 assert.equal(await token.totalSupply() - startTotalSupply, 0);
             });
@@ -187,7 +187,7 @@ contract('PLTToken', function(accounts) {
             });
             it("If mint from owner, totalSuply not changed", async function() {
                 const [token, controller] = await deployTokenWithController();
-                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                const startTotalSupply = await token.totalSupply();
                 await skipException(token.mint(roles.investor1, 1, {from: roles.owner1}));
                 assert.equal(await token.totalSupply() - startTotalSupply, 0);
             });
@@ -204,7 +204,7 @@ contract('PLTToken', function(accounts) {
             });
             it("If mint from nobody, totalSuply not changed", async function() {
                 const [token, controller] = await deployTokenWithController();
-                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                const startTotalSupply = await token.totalSupply();
                 await skipException(token.mint(roles.investor1, 1, {from: roles.nobody}));
                 assert.equal(await token.totalSupply() - startTotalSupply, 0);
             });
@@ -236,9 +236,9 @@ contract('PLTToken', function(accounts) {
             it("If burn from controller, _amount < _from balance, totalSuply reduced by _amount", async function() {
                 const [token, controller] = await deployTokenWithController();
                 await token.mint(roles.investor1, PLT(10), {from: controller});
-                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                const startTotalSupply = await token.totalSupply();
                 await token.burn(roles.investor1, PLT(5), {from: controller});
-                const endTotalSupply = await token.totalSupply()
+                const endTotalSupply = await token.totalSupply();
                 assert.equal(startTotalSupply - endTotalSupply, PLT(5));
             });
             it("If burn from controller, _amount = _from balance, token doesn't raise error", async function() {
@@ -255,9 +255,9 @@ contract('PLTToken', function(accounts) {
             it("If burn from controller, _amount = _from balance, totalSuply reduced by _amount", async function() {
                 const [token, controller] = await deployTokenWithController();
                 await token.mint(roles.investor1, PLT(10), {from: controller});
-                const startTotalSupply = await token.balanceOf(roles.investor1, {from: controller});
+                const startTotalSupply = await token.totalSupply();
                 await token.burn(roles.investor1, PLT(5), {from: controller});
-                const endTotalSupply = await token.totalSupply()
+                const endTotalSupply = await token.totalSupply();
                 assert.equal(startTotalSupply - endTotalSupply, PLT(5));
             });
             it("If burn from controller, _amount > _from balance, token raise error", async function() {

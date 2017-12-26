@@ -104,10 +104,10 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
     // INTERNAL
 
     function calculateTokens(address /*investor*/, uint payment, uint /*extraBonuses*/) internal constant returns (uint) {
-        // FIMXE: here flexible logic with decreasing every day
-        uint rate = c_PLTperETH.mul(c_PLTBonus.add(100)).div(100);
+        // FIXME: here flexible logic with decreasing every day
+        uint numTokens = c_PLTperETH.mul(c_PLTBonus.add(100)).mul(payment).div(100);
 
-        return payment.mul(rate);
+        return numTokens;
     }
 
     /// @notice minimum amount of funding to consider ICO as successful

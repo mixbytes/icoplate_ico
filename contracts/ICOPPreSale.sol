@@ -77,9 +77,9 @@ contract ICOPPreSale is SimpleCrowdsaleBase, Ownable, StatefulMixin, ExternalAcc
     }
 
     function calculateTokens(address /*investor*/, uint payment, uint /*extraBonuses*/) internal constant returns (uint) {
-        uint rate = c_PLTperETH.mul(c_PLTBonus.add(100)).div(100);
+        uint numTokens = c_PLTperETH.mul(c_PLTBonus.add(100)).mul(payment).div(100);
 
-        return payment.mul(rate);
+        return numTokens;
     }
 
     /// @notice minimum amount of funding to consider preSale as successful

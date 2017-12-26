@@ -70,13 +70,17 @@ contract('ICOPICO', function(accounts) {
         nobody: accounts[5]
     };
 
-    async function deployTokenAndCrowdSale() {
+    async function deployTokenAndICO() {
         const token = await PLTToken.new({from: roles.owner1});
-        const CrowdSale = await ICOPPreSale.new(token.address, roles.cash, {from: roles.owner1});
 
-        await token.addController(CrowdSale.address, {from: roles.owner1});
+        const ico = await ICOPICO.new(
+            [roles.owner1, roles.owner2, roles.owner3], token.address, {from: roles.nobody, gas: 30000000}
+        );
 
-        return [CrowdSale, token];
+        await token.addController(ico.address, {from: roles.owner1});
+        const funds = await FundsRegistry.at(await ico.getFundsAddress());
+
+        return [ico, token, funds];
     }
 
     describe('Withdraw', function() {
@@ -158,6 +162,45 @@ contract('ICOPICO', function(accounts) {
             assert(balance.eq(new web3.BigNumber('4.2e+21')));
             balance = await token.balanceOf(roles.investor3, {from: roles.nobody});
             assert(balance.eq(0));
+        });
+    });
+
+    describe('Invested', function() {
+        /**
+         * Start ico.
+         * Reach hard cap
+         * End ICO and check that investments are not allowed
+         */
+
+        it("Investment is not allowed after success sale", async function() {
+            let [ico, token, funds] = await deployTokenAndICO();
+
+            let startTs = await ico._getStartTime();
+            let endTs = await ico._getEndTime();
+
+            await ico.setTime(startTs.plus(1), {from: roles.owner1});
+
+            ico.buy({
+                from: roles.investor1,
+                value: web3.toWei(50000, 'finney')
+            })
+
+            await ico.setTime(endTs.plus(1), {from: roles.owner1});
+
+            let tokenBalanceBefore = await token.balanceOf(roles.investor1, {from: roles.nobody});
+            let investorFundsBefore = await web3.eth.getBalance(roles.investor1);
+
+            await expectThrow(ico.buy({
+                from: roles.investor1,
+                value: web3.toWei(20, 'finney'),
+                gasPrice: 0
+            }));
+
+            let tokenBalanceAfter = await token.balanceOf(roles.investor1, {from: roles.nobody});
+            let investorFundsAfter = await web3.eth.getBalance(roles.investor1);
+
+            assert.equal(tokenBalanceAfter - tokenBalanceBefore, 0);
+            assert.equal(investorFundsBefore - investorFundsAfter, 0);
         });
     });
 });

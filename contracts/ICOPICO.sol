@@ -73,7 +73,6 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
         if (getWeiCollected() >= getMinimumFunds() && m_fundsAddress.m_state() != FundsRegistry.State.SUCCEEDED) {
             m_fundsAddress.changeState(FundsRegistry.State.SUCCEEDED);
         }
-        //
     }
 
     function withdrawPayments() public {
@@ -140,7 +139,7 @@ contract ICOPICO is SimpleCrowdsaleBase, multiowned, FundsRegistryWalletConnecto
     }
 
     function mustApplyTimeCheck(address investor, uint /*payment*/) constant internal returns (bool) {
-        return isOwner(investor);
+        return !isOwner(investor);
     }
 
     function wcOnCrowdsaleSuccess() internal {

@@ -247,9 +247,9 @@ export function crowdsaleUTest(accounts, instantiate, settings) {
             if (settings.startTime) {
                 // too early!
                 await crowdsale.setTime(settings.startTime - 86400*365*2, {from: role.owner1});
-                await expectThrow(pay(crowdsale, {from: role.investor1, value: web3.toWei(20, 'finney')}));
+                await expectThrow(pay(crowdsale, {from: role.investor2, value: web3.toWei(20, 'finney')}));
                 await crowdsale.setTime(settings.startTime - 1, {from: role.owner1});
-                await expectThrow(pay(crowdsale, {from: role.investor1, value: web3.toWei(20, 'finney')}));
+                await expectThrow(pay(crowdsale, {from: role.investor2, value: web3.toWei(20, 'finney')}));
             }
 
             // first investment at the first second

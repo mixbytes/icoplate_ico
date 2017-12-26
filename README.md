@@ -1,6 +1,8 @@
 # icoplate_ico
 ICOPlace ICO
 
+![](https://travis-ci.org/mixbytes/icoplate_ico.svg?branch=master)
+
 ## Install
 Make sure testrpc is running:
 ```
